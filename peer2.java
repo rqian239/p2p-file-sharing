@@ -29,12 +29,11 @@ public class peer2 {
             while (true) {
                 String outmsg = sc.nextLine();
 
-                //Send message to server
+                //send message to peer
                 bw.write(outmsg);
                 bw.newLine();
                 bw.flush();
 
-                //Check for key words to know whether to recieve file or not(Joke 1, Joke 2, Joke 3, bye, or error)
                 if(outmsg.equals("exit")){
                     System.out.println("Receieved: " + br.readLine());
                     System.out.println("Exitting");
@@ -47,6 +46,7 @@ public class peer2 {
         } catch (Exception e) {
             e.printStackTrace();
         } finally{
+            //close all streams and sockets if not already closed
             try {
                 if(br != null) br.close();
                 if(bw != null) bw.close();
