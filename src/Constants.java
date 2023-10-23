@@ -14,6 +14,10 @@ public class Constants {
     final private byte REQUEST = 6;
     final private byte PIECE = 7;
 
+    // Handshake message constants
+    final private String ZERO_BITS = "0000000000";
+    final private String HANDSHAKE_HEADER = "P2PFILESHARINGPROJ";
+
 
     // Getters
     public byte getChoke() {
@@ -46,6 +50,14 @@ public class Constants {
 
     public byte getPIECE() {
         return PIECE;
+    }
+
+    public String getZERO_BITS() {
+        return ZERO_BITS;
+    }
+
+    public String getHANDSHAKE_HEADER() {
+        return HANDSHAKE_HEADER;
     }
 
 }
