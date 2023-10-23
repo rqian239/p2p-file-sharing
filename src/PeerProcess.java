@@ -1,7 +1,7 @@
 package src;
 
-import java.io.File;
-import java.io.FileNotFoundException;
+import java.io.*;
+import java.net.*;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
@@ -29,5 +29,49 @@ public class PeerProcess
             Peers.put(peer.peerId, peer);
         }
         scnr.close();
+    }
+
+
+    public static void sendFile(String name, Socket sockT) throws IOException{
+        try{
+            //Initalize files and streams
+            File file = new File(name+".mp3");
+            FileInputStream fstream = new FileInputStream(file);
+
+            BufferedOutputStream bos = new BufferedOutputStream(sockT.getOutputStream());
+            ObjectOutputStream oos = new ObjectOutputStream(bos);
+
+            byte[] buf = new byte[(int) file.length()];
+            fstream.read(buf);
+
+            oos.writeObject(buf);
+            oos.flush();
+
+            fstream.close();
+
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    public static void recieveFile(String name, Socket sockT) throws IOException{
+        try{
+            //Initalize files and streams
+            BufferedInputStream bis = new BufferedInputStream(sockT.getInputStream());
+            ObjectInputStream ois = new ObjectInputStream(bis);
+
+            FileOutputStream fos = new FileOutputStream(name+".mp3");
+
+            byte[] buf = byte[] ois.readObject();
+
+            fos.write(buf);
+            fos.flush();
+            fos.close();
+
+            System.out.println(name + "file recieved");
+
+        }catch(IOException e){
+            e.printStackTrace();
+        }
     }
 }
