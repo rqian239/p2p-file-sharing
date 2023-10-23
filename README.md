@@ -1,5 +1,8 @@
 # p2p-file-sharing
-Peer-to-peer file sharing program
+
+Nivedha Natarajan, Richard Qian, Sonu Venu, Revati Vijayn
+
+This project is a peer-to-peer file sharing program similar to BitTorrent.
 
 To run use "javac *.java" command to create class files.
 
