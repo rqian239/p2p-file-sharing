@@ -16,7 +16,7 @@ public class Constants {
 
     // Handshake message constants
     final private static String ZERO_BITS = "0000000000";
-    final private  String HANDSHAKE_HEADER = "P2PFILESHARINGPROJ";
+    final private static String HANDSHAKE_HEADER = "P2PFILESHARINGPROJ";
 
 
     // Getters
