@@ -5,6 +5,7 @@ import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
+import java.net.*;
 
 public class Peer 
 {
@@ -29,7 +30,7 @@ public class Peer
 
     public void setCommonConfig() throws FileNotFoundException
     {
-        File commonConfig = new File("Common.cfg");
+        File commonConfig = new File("src/Common.cfg");
         Scanner scnr = new Scanner(commonConfig);
 
         List<String> tempVariables = new ArrayList<String>();
@@ -49,4 +50,6 @@ public class Peer
         this.filesize = Integer.parseInt(tempVariables.get(4));
         this.piecesize = Integer.parseInt(tempVariables.get(5));
     }
+
+    
 }
