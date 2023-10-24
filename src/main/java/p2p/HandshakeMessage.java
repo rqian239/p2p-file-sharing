@@ -10,7 +10,7 @@ public class HandshakeMessage implements Serializable {
     private char[] handshakeHeader;
 
     // Constructor: create a handshake message with a peerID
-    HandshakeMessage(int peerID) {
+    public HandshakeMessage(int peerID) {
         this.peerID = peerID;
         this.zeroBits = Constants.getZERO_BITS().toCharArray();
         this.handshakeHeader = Constants.getHANDSHAKE_HEADER().toCharArray();

@@ -2,7 +2,6 @@ package main.java.p2p.peers;
 
 import java.io.*;
 import java.net.Socket;
-import java.util.Scanner;
 import main.java.p2p.HandshakeMessage;
 
 public class peer_1002 {
@@ -21,31 +20,15 @@ public class peer_1002 {
             br = new BufferedReader(rdr);
             bw = new BufferedWriter(wr);
 
-            Scanner sc = new Scanner(System.in);
-
 	        System.out.println("Receieved: " + br.readLine());
 
             bw.write("Hello From Client 2!");
             bw.newLine();
             bw.flush();
+
+            recieveFile(socket);
+            sendFile(1002, socket);
 	    
-            while (true) {
-                String outmsg = sc.nextLine();
-
-                //send message to peer
-                bw.write(outmsg);
-                bw.newLine();
-                bw.flush();
-
-                if(outmsg.equals("exit")){
-                    System.out.println("Receieved: " + br.readLine());
-                    System.out.println("Exitting");
-                    break;
-                }
-                else{
-                    System.out.println("Receieved: " + br.readLine());
-                }
-            }
         } catch (Exception e) {
             e.printStackTrace();
         } finally{
