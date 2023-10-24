@@ -5,8 +5,10 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Scanner;
 
-public class peer1 {
-    public static void main(String[] args) throws IOException{
+public class peer1 
+{
+    public static void main(String[] args) throws IOException
+    {
         Socket socket = null;
         InputStreamReader rdr = null;
         OutputStreamWriter wr = null;
@@ -15,8 +17,10 @@ public class peer1 {
 
         ServerSocket serverSock = new ServerSocket(Integer.parseInt(args[0]));
 
-        while(true){
-            try {
+        while(true)
+        {
+            try 
+            {
                 //Initalize socket, streams, and scanner
                 socket = serverSock.accept();
                 rdr = new InputStreamReader(socket.getInputStream());
@@ -33,7 +37,9 @@ public class peer1 {
 		
                 Scanner sc = new Scanner(System.in);
 
-                while(true){
+                while(true)
+                {
+                    //While running, send and receive messages from peer
                     String inmsg = br.readLine();
                     //Print message from peer in Terminal
                     System.out.println("Receieved: " + inmsg);
@@ -58,16 +64,22 @@ public class peer1 {
                 br.close();
                 bw.close();
 
-            } catch (IOException e) {
+            } 
+            catch (IOException e) 
+            {
                 e.printStackTrace();
-            } finally{
+            } 
+            finally
+            {
                 try {
                     if(br != null) br.close();
                     if(bw != null) bw.close();
                     if(rdr != null) rdr.close();
                     if(wr != null) wr.close();
                     if(socket != null) socket.close();
-                } catch (Exception e2) {
+                } 
+                catch (Exception e2) 
+                {
                     e2.printStackTrace();
                 }
             }

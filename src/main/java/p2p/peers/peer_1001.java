@@ -34,7 +34,8 @@ public class peer_1001 {
                 bw.flush();
 
                 System.out.println("Receieved: " + br.readLine());
-                
+                //Sending Handshake Message from Peer1001 and receiving HandshakeMessage back
+
                 HandshakeMessage pid = new HandshakeMessage(1001);
                 sendFile(socket, pid);
                 Object recieved = recieveFile(socket);
@@ -42,7 +43,7 @@ public class peer_1001 {
                 HandshakeMessage handshake = (HandshakeMessage) recieved;
                 System.out.println("Handshake received: PeerID = "+ handshake.getPeerID());
 
-
+                //Sending Message, Type 2 from Peer1001 and receiving Message, Type 4 back
                 Message message = new Message(Constants.getHAVE());
                 sendFile(socket, message);
                 recieved = recieveFile(socket);
@@ -59,10 +60,16 @@ public class peer_1001 {
 
                 return;
 
-            } catch (IOException e) {
+            } 
+            catch (IOException e) 
+            {
                 e.printStackTrace();
-            } finally{
-                try {
+            } 
+            finally
+            {
+                try 
+                {
+                    //close all streams and sockets if not already closed
                     if(br != null) br.close();
                     if(bw != null) bw.close();
                     if(rdr != null) rdr.close();
@@ -75,11 +82,11 @@ public class peer_1001 {
         }
     }
 
-    public static void sendFile(Socket sockT, Object obj) throws IOException{
-        try{
-            //Initalize files and streams
-            
-
+    public static void sendFile(Socket sockT, Object obj) throws IOException
+    {
+        try
+        {
+            //Initializing objects and streams
             BufferedOutputStream bos = new BufferedOutputStream(sockT.getOutputStream());
             ObjectOutputStream oos = new ObjectOutputStream(bos);
 
@@ -87,27 +94,34 @@ public class peer_1001 {
             oos.flush();
 
         }
-        catch(Exception e){
+        catch(Exception e)
+        {
             e.printStackTrace();
         }
     }
 
-    public static Object recieveFile(Socket sockT) throws IOException{
+    public static Object recieveFile(Socket sockT) throws IOException
+    {
         System.out.println("peer1001: recieveFile called");
-        try{
-            //Initalize files and streams
-            try {
+        try
+        {
+            //Initalizing objects and streams
+            try 
+            {
             BufferedInputStream bis = new BufferedInputStream(sockT.getInputStream());
             ObjectInputStream ois = new ObjectInputStream(bis);
 
             return ois.readObject();
 
-            } catch (ClassNotFoundException e) {
+            } 
+            catch (ClassNotFoundException e) 
+            {
                 e.printStackTrace();
             }
 
         }
-        catch(IOException e){
+        catch(IOException e)
+        {
             e.printStackTrace();
         }
         return sockT;
