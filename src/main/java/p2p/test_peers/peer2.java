@@ -1,3 +1,5 @@
+package main.java.p2p.test_peers;
+
 import java.io.*;
 import java.net.Socket;
 import java.util.Scanner;
