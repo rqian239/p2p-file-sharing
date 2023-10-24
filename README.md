@@ -6,10 +6,11 @@ This project is a peer-to-peer file sharing program similar to BitTorrent. This 
 
 ## Run Project
 
-To run, nav enter the following into a terminal or command prompt
+To run, navigate to the project root and enter the following into a terminal or command prompt
 
 ```
 cd src
+chmod +x run_peers.sh
 ./run_peers.sh
 java -cp . main.java.p2p.peers.peer_1001 5230
 
