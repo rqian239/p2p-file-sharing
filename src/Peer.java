@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Scanner;
 import java.net.*;
 
+// Class to hold information about a Peer
+
 public class Peer 
 {
     int peerId;

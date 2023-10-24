@@ -7,13 +7,24 @@ public class Message implements Serializable{
     private int messageLength;
     private byte messageType;
 
+    // Needed if there is a payload (data)
     private String bitfield = null;
     private int indexField;
     private byte[] payload;
 
+    // Constructor given messageType and messageLength
     Message(byte messageType, int messageLength) {
         this.messageType = messageType;
         this.messageLength = messageLength;
+    }
+
+    Message(byte messageType) {
+        this.messageType = messageType;
+        messageLength = 0;
+    }
+
+    Message() {
+        throw new RuntimeException("You must provide a messageType to create a Message object.");
     }
 
     // Getters
@@ -34,6 +45,7 @@ public class Message implements Serializable{
         return indexField;
     }
 
+    
     // Setters
 
     public void setBitfield(String bitfield) {
