@@ -42,8 +42,8 @@ public class PeerProcess
             if(entry.getKey() < 1001){
                 Peer currPeer = Peers.get(1001);
                 int port = currPeer.port;
-                // Runtime.getRuntime().exec("javac test-peers/peer1 " + entry.getValue().port);
-                // Runtime.getRuntime().exec("javac test-peers/peer2 localhost " + entry.getValue().port);
+                Runtime.getRuntime().exec("javac test-peers/peer1 " + entry.getValue().port);
+                Runtime.getRuntime().exec("javac test-peers/peer2 localhost " + entry.getValue().port);
                 //connect two; make a client
                 //java test-peers/peer1 port
                 //java test-peers/peer 2 localhost port
