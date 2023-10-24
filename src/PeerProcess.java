@@ -13,6 +13,7 @@ import java.util.*;
 import java.util.Iterator;
 
 
+
 public class PeerProcess 
 {
     public static void main(String[] args) throws IOException 
@@ -75,50 +76,54 @@ public class PeerProcess
     }
 
 
-    // public static void sendFile(String name, Socket sockT) throws IOException{
-    //     try{
-    //         //Initalize files and streams
-    //         File file = new File(name+".mp3");
-    //         FileInputStream fstream = new FileInputStream(file);
+    public static void sendFile(String name, Socket sockT) throws IOException{
+        try{
+            //Initalize files and streams
+            File file = new File(name+".mp3");
+            FileInputStream fstream = new FileInputStream(file);
 
-    //         BufferedOutputStream bos = new BufferedOutputStream(sockT.getOutputStream());
-    //         ObjectOutputStream oos = new ObjectOutputStream(bos);
+            BufferedOutputStream bos = new BufferedOutputStream(sockT.getOutputStream());
+            ObjectOutputStream oos = new ObjectOutputStream(bos);
 
-    //         byte[] buf = new byte[(int) file.length()];
-    //         fstream.read(buf);
+            byte[] buf = new byte[(int) file.length()];
+            fstream.read(buf);
 
-    //         oos.writeObject(buf);
-    //         oos.flush();
+            oos.writeObject(buf);
+            oos.flush();
 
-    //         fstream.close();
+            fstream.close();
 
-    //     }
-    //     catch(Exception e){
-    //         e.printStackTrace();
-    //     }
-    // }
+        }
+        catch(Exception e){
+            e.printStackTrace();
+        }
+    }
 
-    // public static void recieveFile(String name, Socket sockT) throws IOException{
-    //     try{
-    //         //Initalize files and streams
-    //         BufferedInputStream bis = new BufferedInputStream(sockT.getInputStream());
-    //         ObjectInputStream ois = new ObjectInputStream(bis);
+    public static void recieveFile(String name, Socket sockT) throws IOException{
+        try{
+            //Initalize files and streams
+            try {
+            BufferedInputStream bis = new BufferedInputStream(sockT.getInputStream());
+            ObjectInputStream ois = new ObjectInputStream(bis);
 
-    //         FileOutputStream fos = new FileOutputStream(name+".mp3");
+            FileOutputStream fos = new FileOutputStream(name+".mp3");
 
-    //         byte[] buf = byte[] ois.readObject();
+            byte[] buf = (byte[]) ois.readObject();
 
-    //         fos.write(buf);
-    //         fos.flush();
-    //         fos.close();
+            fos.write(buf);
+            fos.flush();
+            fos.close();
 
-    //         System.out.println(name + "file recieved");
+                System.out.println(name + "file received");
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            }
 
-    //     }
-    //     catch(IOException e){
-    //         e.printStackTrace();
-    //     }
-    // }
+        }
+        catch(IOException e){
+            e.printStackTrace();
+        }
+    }
 
     
 }
