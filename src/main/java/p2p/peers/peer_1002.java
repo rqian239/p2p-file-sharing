@@ -3,7 +3,7 @@ package main.java.p2p.peers;
 import java.io.*;
 import java.net.Socket;
 import java.util.Scanner;
-import peers.HandshakeMessage;
+import main.java.p2p.HandshakeMessage;
 
 public class peer_1002 {
     public static void main(String[] args) {
@@ -65,18 +65,13 @@ public class peer_1002 {
     public static void sendFile(int pidT, Socket sockT) throws IOException{
         try{
             //Initalize files and streams
-            HandshakeMessage pid = HandshakeMessage(pidT);
+            HandshakeMessage pid = new HandshakeMessage(pidT);
 
             BufferedOutputStream bos = new BufferedOutputStream(sockT.getOutputStream());
             ObjectOutputStream oos = new ObjectOutputStream(bos);
 
-            byte[] buf = new byte[(int) file.length()];
-            fstream.read(buf);
-
-            oos.writeObject(buf);
+            oos.writeObject(pid);
             oos.flush();
-
-            fstream.close();
 
         }
         catch(Exception e){
@@ -91,9 +86,9 @@ public class peer_1002 {
             BufferedInputStream bis = new BufferedInputStream(sockT.getInputStream());
             ObjectInputStream ois = new ObjectInputStream(bis);
 
-            System.out.print(ois.readObject());
+            HandshakeMessage message = (HandshakeMessage) ois.readObject();
 
-            System.out.println("Handshake received");
+            System.out.println("Handshake received: PeerID = "+ message.getPeerID());
 
             } catch (ClassNotFoundException e) {
                 e.printStackTrace();
