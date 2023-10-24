@@ -3,7 +3,9 @@ import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 
+import main.java.p2p.Constants;
 import main.java.p2p.HandshakeMessage;
+import main.java.p2p.Message;
 
 
 public class peer_1001 {
@@ -33,8 +35,20 @@ public class peer_1001 {
 
                 System.out.println("Receieved: " + br.readLine());
                 
-                sendFile(1001, socket);
-                recieveFile(socket);
+                HandshakeMessage pid = new HandshakeMessage(1001);
+                sendFile(socket, pid);
+                Object recieved = recieveFile(socket);
+
+                HandshakeMessage handshake = (HandshakeMessage) recieved;
+                System.out.println("Handshake received: PeerID = "+ handshake.getPeerID());
+
+
+                Message message = new Message(Constants.getHAVE());
+                sendFile(socket, message);
+                recieved = recieveFile(socket);
+
+                Message messageR = (Message) recieved;
+                System.out.println("Handshake received: Message Type = "+ message.getMessageType());
 
                 //close all streams and sockets
                 socket.close();
@@ -61,15 +75,15 @@ public class peer_1001 {
         }
     }
 
-    public static void sendFile(int pidT, Socket sockT) throws IOException{
+    public static void sendFile(Socket sockT, Object obj) throws IOException{
         try{
             //Initalize files and streams
-            HandshakeMessage pid = new HandshakeMessage(pidT);
+            
 
             BufferedOutputStream bos = new BufferedOutputStream(sockT.getOutputStream());
             ObjectOutputStream oos = new ObjectOutputStream(bos);
 
-            oos.writeObject(pid);
+            oos.writeObject(obj);
             oos.flush();
 
         }
@@ -78,7 +92,7 @@ public class peer_1001 {
         }
     }
 
-    public static void recieveFile(Socket sockT) throws IOException{
+    public static Object recieveFile(Socket sockT) throws IOException{
         System.out.println("peer1001: recieveFile called");
         try{
             //Initalize files and streams
@@ -86,9 +100,7 @@ public class peer_1001 {
             BufferedInputStream bis = new BufferedInputStream(sockT.getInputStream());
             ObjectInputStream ois = new ObjectInputStream(bis);
 
-            HandshakeMessage message = (HandshakeMessage) ois.readObject();
-
-            System.out.println("Handshake received: PeerID = "+ message.getPeerID());
+            return ois.readObject();
 
             } catch (ClassNotFoundException e) {
                 e.printStackTrace();
@@ -98,6 +110,7 @@ public class peer_1001 {
         catch(IOException e){
             e.printStackTrace();
         }
+        return sockT;
     }
 }
 
