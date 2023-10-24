@@ -30,6 +30,8 @@ public class peer_1001 {
 		        bw.write("Hello From Client 1!");
                 bw.newLine();
                 bw.flush();
+
+                System.out.println("Receieved: " + br.readLine());
                 
                 sendFile(1001, socket);
                 recieveFile(socket);
@@ -75,6 +77,7 @@ public class peer_1001 {
     }
 
     public static void recieveFile(Socket sockT) throws IOException{
+        System.out.println("peer1001: recieveFile called");
         try{
             //Initalize files and streams
             try {
