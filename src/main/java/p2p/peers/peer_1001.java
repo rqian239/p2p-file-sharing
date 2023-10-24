@@ -48,7 +48,7 @@ public class peer_1001 {
                 recieved = recieveFile(socket);
 
                 Message messageR = (Message) recieved;
-                System.out.println("Handshake received: Message Type = "+ message.getMessageType());
+                System.out.println("RECEIVED MESSAGE - Message Type = "+ messageR.getMessageType());
 
                 //close all streams and sockets
                 socket.close();

@@ -39,7 +39,7 @@ public class peer_1002 {
 
             recieved = recieveFile(socket);
             Message messageR = (Message) recieved;
-            System.out.println("Handshake received: Message Type = "+ messageR.getMessageType());
+            System.out.println("RECEIVED MESSAGE - Message Type = "+ messageR.getMessageType());
 
             Message message = new Message(Constants.getINTERESTED());
             sendFile(socket, message);
