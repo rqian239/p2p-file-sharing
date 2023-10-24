@@ -43,6 +43,8 @@ public class peer_1001 {
                 br.close();
                 bw.close();
 
+                return;
+
             } catch (IOException e) {
                 e.printStackTrace();
             } finally{
