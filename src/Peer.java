@@ -1,4 +1,4 @@
-package src;
+
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -20,6 +20,9 @@ public class Peer
     long filesize;
     long piecesize;
 
+    public Peer(){
+
+    }
     public Peer(int peerId, String hostname, int port, int bitfield)
     {
         this.peerId = peerId;
