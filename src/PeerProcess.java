@@ -28,12 +28,12 @@ public class PeerProcess
         {
             String line = scnr.nextLine();
             String [] variables = line.split(" ");
-            int variable1 = Integer.parseInt(variables[0]);
-            String variable2 = variables[1];
-            int variable3 = Integer.parseInt(variables[2]);
-            int variable4 = Integer.parseInt(variables[3]);
+            int peerID = Integer.parseInt(variables[0]);
+            String hostname = variables[1];
+            int port = Integer.parseInt(variables[2]);
+            int bitfield = Integer.parseInt(variables[3]);
 
-            Peer peer = new Peer(variable1, variable2, variable3, variable4);
+            Peer peer = new Peer(peerID, hostname, port, bitfield);
             System.out.println("Peer stuff" + peer.peerId + " " + peer.hostname + " " + peer.port + " " + peer.bitfield);
             Peers.put(peer.peerId, peer);
         }
@@ -56,7 +56,7 @@ public class PeerProcess
                 String workingDir = (System.getProperty("user.dir"));
                 workingDir += "/test_peers";
                 System.out.println(entry.getValue().port);
-                
+
                 try
                 {
                 Runtime.getRuntime().exec("cd " + workingDir + " ; " + "java peer1 " + entry.getValue().port);
