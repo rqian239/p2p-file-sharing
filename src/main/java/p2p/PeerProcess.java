@@ -124,7 +124,5 @@ public class PeerProcess
         catch(IOException e){
             e.printStackTrace();
         }
-    }
-
-    
+    }  
 }
