@@ -2,12 +2,11 @@ package main.java.p2p.peers;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.Scanner;
 
 import main.java.p2p.HandshakeMessage;
 
 
-public class peer1001 {
+public class peer_1001 {
     public static void main(String[] args) throws IOException{
         Socket socket = null;
         InputStreamReader rdr = null;
@@ -35,29 +34,6 @@ public class peer1001 {
                 sendFile(1001, socket);
                 recieveFile(socket);
 
-
-                System.out.println("Receieved: " + br.readLine());
-		
-                Scanner sc = new Scanner(System.in);
-
-                while(true){
-                    String inmsg = br.readLine();
-                    //Print message from peer in Terminal
-                    System.out.println("Receieved: " + inmsg);
-                    
-                    if(inmsg.equals("exit")){
-                        bw.write("Disconnected");
-                        bw.newLine();
-                        bw.flush();
-                        break;
-                    }
-                    else{
-                        String outmsg = sc.nextLine();
-                        bw.write(outmsg);
-                        bw.newLine();
-                        bw.flush();
-                    }
-                }
                 //close all streams and sockets
                 socket.close();
                 rdr.close();
@@ -80,9 +56,8 @@ public class peer1001 {
             }
         }
     }
-}
 
-public static void sendFile(int pidT, Socket sockT) throws IOException{
+    public static void sendFile(int pidT, Socket sockT) throws IOException{
         try{
             //Initalize files and streams
             HandshakeMessage pid = new HandshakeMessage(pidT);
