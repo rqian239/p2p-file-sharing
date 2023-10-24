@@ -25,3 +25,18 @@ java -cp . main.java.p2p.peers.peer_1002 localhost 5230
 ```
 
 The peers should have exchanged messages and printed logs into the terminal.
+
+
+If you run into any errors with the .sh script above, you can run the commands directly. Run this inplace of the first code block
+
+```
+cd src
+cd main/java/p2p
+javac *.java
+cd ../../..
+javac -cp . main/java/p2p/peers/peer_1001.java
+javac -cp . main/java/p2p/peers/peer_1002.java
+java -cp . main.java.p2p.peers.peer_1001 5230
+
+```
+And then proceed with opening a new terminal instance, running the subsequent commands...
