@@ -1,7 +1,7 @@
-package src;
-
 import java.io.Serializable;
 
+
+// This class stores a Message (packet) defined in the project spec
 public class Message implements Serializable{
     
     private int messageLength;

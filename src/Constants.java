@@ -1,5 +1,3 @@
-package src;
-
 // This class stores message types and other related constants of the project
 
 public class Constants {

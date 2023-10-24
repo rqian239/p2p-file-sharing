@@ -1,7 +1,7 @@
-package src;
-
 import java.io.Serializable;
 
+
+// This is a class that holds the HandshakeMessage
 public class HandshakeMessage implements Serializable {
     
     private int peerID;
