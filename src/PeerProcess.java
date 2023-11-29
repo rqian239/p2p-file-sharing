@@ -20,6 +20,7 @@ public class PeerProcess {
         // Start the peer process
         try {
             startPeerProcess(peer);
+            checkInterested(peer);
         } catch (IOException e) {
             System.err.println("Error starting the peer process: " + e.getMessage());
             e.printStackTrace();
@@ -54,7 +55,8 @@ public class PeerProcess {
             e.printStackTrace();
         }
     }
-    
+
+
     private static void sendBitfield(Socket socket, Peer peer) {
         try {
             // Convert the BitSet to a byte array
@@ -72,6 +74,14 @@ public class PeerProcess {
             outputStream.write(messageBuffer.array());
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    private static void checkInterested(Peer peer){
+        for(int i = 0; i < peer.getNumPieces(); i++){
+            if(peer.hasPiece(i) && ){
+                System.out.println("Peer " + peer.getPeerID() + " has piece " + i);
+            }
         }
     }
 }
