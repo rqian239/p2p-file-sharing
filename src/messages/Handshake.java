@@ -1,9 +1,10 @@
 package messages;
 
+import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 
-public class Handshake {
+public class Handshake implements Serializable {
     private static final String HANDSHAKE_HEADER = "P2PFILESHARINGPROJ";
     private static final int ZERO_BITS_LENGTH = 10;
     private final int peerID;

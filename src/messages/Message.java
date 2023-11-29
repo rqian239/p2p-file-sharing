@@ -1,8 +1,9 @@
 package messages;
 
+import java.io.Serializable;
 import java.nio.ByteBuffer;
 
-public class Message {
+public class Message implements Serializable {
     private int messageLength;
     private byte messageType;
     private byte[] payload;
