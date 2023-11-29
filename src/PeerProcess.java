@@ -1,4 +1,9 @@
+import messages.*;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.net.Socket;
+import java.nio.ByteBuffer;
+
 
 public class PeerProcess {
     public static void main(String[] args) {
@@ -33,6 +38,40 @@ public class PeerProcess {
 
     private static void startPeerProcess(Peer peer) throws IOException {
         
+        Socket socket = new Socket(peer.getHostname(), peer.getPort());
+        sendHandshake(socket, peer);
+        sendBitfield(socket, peer);
         System.out.println("Peer " + peer.getPeerID() + " started successfully!");
+    }
+
+    private static void sendHandshake(Socket socket, Peer peer) {
+        messages.Handshake handshake = new messages.Handshake(peer.getPeerID());
+        byte[] handshakeBytes = handshake.createHandshakeMessage();
+        try {
+            OutputStream outputStream = socket.getOutputStream();
+            outputStream.write(handshakeBytes);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    
+    private static void sendBitfield(Socket socket, Peer peer) {
+        try {
+            // Convert the BitSet to a byte array
+            byte[] bitfieldBytes = peer.getBitmap().toByteArray();
+
+            // Prepare the message
+            int messageLength = 1 + bitfieldBytes.length;  // 1 byte for message type
+            ByteBuffer messageBuffer = ByteBuffer.allocate(4 + messageLength);
+            messageBuffer.putInt(messageLength);  // Message length
+            messageBuffer.put((byte) Constants.BITFIELD);  // Message type
+            messageBuffer.put(bitfieldBytes);  // Bitfield
+
+            // Send the message
+            OutputStream outputStream = socket.getOutputStream();
+            outputStream.write(messageBuffer.array());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }
