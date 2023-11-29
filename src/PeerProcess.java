@@ -1,21 +1,47 @@
 import messages.*;
-import java.io.IOException;
-import java.io.OutputStream;
+
+import java.io.*;
 import java.net.Socket;
 import java.nio.ByteBuffer;
+import java.util.Properties;
 
 
 public class PeerProcess {
+
+    // Config filenames
+    static final String COMMON_CONFIG_FILE = "Common.cfg";
+    static final String PEER_INFO_CONFIG_FILE = "PeerInfo.cfg";
+
+
+
     public static void main(String[] args) {
         if (args.length != 1) {
-            System.out.println("Usage: java PeerProcess <peerID>");
-            System.exit(1);
+            throw new RuntimeException("PeerID not specified!");
         }
 
         int peerID = Integer.parseInt(args[0]);
 
         // Create a Peer object
         Peer peer = createPeer(peerID);
+
+        // Parse Common.cfg file
+        Properties properties = new Properties();
+        try(FileInputStream in = new FileInputStream(COMMON_CONFIG_FILE)) {
+            properties.load(in);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        int numberOfPreferredNeighbors = Integer.parseInt(properties.getProperty("NumberOfPreferredNeighbors"));
+        int unchokingInterval = Integer.parseInt(properties.getProperty("UnchokingInterval"));
+        int optimisticUnchokingInterval = Integer.parseInt(properties.getProperty("OptimisticUnchokingInterval"));
+        String dataFilename = properties.getProperty("FileName");
+        int fileSize = Integer.parseInt(properties.getProperty("FileSize"));
+        int pieceSize = Integer.parseInt(properties.getProperty("PieceSize"));
+
+
+
+
+
 
         // Start the peer process
         try {
