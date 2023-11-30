@@ -1,6 +1,7 @@
 import messages.*;
 
 import java.io.*;
+import java.net.ConnectException;
 import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.util.Properties;
@@ -65,11 +66,12 @@ public class PeerProcess {
     }
 
     private static void startPeerProcess(Peer peer) throws IOException {
-        System.out.println("Peer " + peer.getPeerID() + " starting...");
+        /*System.out.println("Peer " + peer.getPeerID() + " starting...");
         Socket socket = new Socket(peer.getHostname(), peer.getPort());
         sendHandshake(socket, peer);
         sendBitfield(socket, peer);
-        System.out.println("Peer " + peer.getPeerID() + " started successfully!");
+        System.out.println("Peer " + peer.getPeerID() + " started successfully!");*/
+
     }
 
     private static void sendHandshake(Socket socket, Peer peer) {
@@ -78,6 +80,29 @@ public class PeerProcess {
         try {
             OutputStream outputStream = socket.getOutputStream();
             outputStream.write(handshakeBytes);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static void receiveHandshake(Socket socket, Peer peer) {
+        try {
+            InputStream inputStream = socket.getInputStream();
+            byte[] receivedHandshake = new byte[32];
+            inputStream.read(receivedHandshake);
+    
+            String receivedHeader = new String(receivedHandshake, 0, 18);
+            byte[] zeroBits = new byte[10];
+            System.arraycopy(receivedHandshake, 18, zeroBits, 0, 10);
+            int receivedPeerID = ByteBuffer.wrap(receivedHandshake, 28, 4).getInt();
+    
+
+            if (receivedHeader.equals("P2PFILESHARINGPROJ") && receivedPeerID == peer.getPeerID()) {
+                System.out.println("Received handshake from Peer " + receivedPeerID);
+              
+            } else {
+                System.out.println("Invalid handshake received from Peer " + receivedPeerID);
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
