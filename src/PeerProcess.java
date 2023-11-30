@@ -5,8 +5,10 @@ import java.net.ConnectException;
 import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.util.Properties;
+import java.util.Scanner;
 import java.util.AbstractMap;
 import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.Map;
 import java.util.Vector;
 
@@ -23,11 +25,13 @@ public class PeerProcess {
         if (args.length != 1) {
             throw new RuntimeException("PeerID not specified!");
         }
+        Hashtable<Integer, Peer> Peers = new Hashtable<Integer, Peer>();
 
+        parsePeerInfo(Peers);
         int peerID = Integer.parseInt(args[0]);
 
         // Create a Peer object
-        Peer peer = createPeer(peerID);
+        Peer peer = Peers.get(peerID);
         Map<Integer, AbstractMap.SimpleEntry<Peer, Socket>> peerMap = new HashMap<>();
         
 
@@ -35,7 +39,8 @@ public class PeerProcess {
         Properties properties = new Properties();
         try(FileInputStream in = new FileInputStream(COMMON_CONFIG_FILE)) {
             properties.load(in);
-        } catch (IOException e) {
+        } 
+        catch (IOException e) {
             e.printStackTrace();
         }
         int numberOfPreferredNeighbors = Integer.parseInt(properties.getProperty("NumberOfPreferredNeighbors"));
@@ -55,15 +60,32 @@ public class PeerProcess {
         }
     }
 
-    private static Peer createPeer(int peerID) {
-        
-        String hostname = "localhost";  // Update with actual hostname
-        int port = 6008;  // Update with actual port
-        boolean hasFile = false;  // Update based on configuration file
-        int numPieces = 306;  // Update based on configuration file
+    private static void parsePeerInfo(Hashtable<Integer, Peer> Peers){
+        // File peerConfig = new File("../PeerInfo.cfg");
 
-        return new Peer(peerID, hostname, port, hasFile, numPieces);
+        Scanner scnr = new Scanner("../PeerInfo.cfg");
+        while(scnr.hasNextLine()) {
+            String line = scnr.nextLine();
+            String [] variables = line.split(" ");
+            int peerID = Integer.parseInt(variables[0]);
+            String hostname = variables[1];
+            int port = Integer.parseInt(variables[2]);
+            int bitfield = Integer.parseInt(variables[3]);
+            Peer peer = new Peer(peerID, hostname, port, bitfield, 306);
+            System.out.println("Peer stuff" + peer.getPeerID() + " " + peer.getHostname() + " " + peer.getPort() + " " + peer.isHasFile());
+            Peers.put(peer.getPeerID(), peer);
+        }
+        scnr.close();
     }
+    // private static Peer createPeer(int peerID) {
+        
+    //     // String hostname = "localhost";  // Update with actual hostname
+    //     // int port = 6008;  // Update with actual port
+    //     // boolean hasFile = false;  // Update based on configuration file
+    //     // int numPieces = 306;  // Update based on configuration file
+
+    //     // return new Peer(peerID, hostname, port, hasFile, numPieces);
+    // }
 
     private static void startPeerProcess(Peer peer) throws IOException {
         /*System.out.println("Peer " + peer.getPeerID() + " starting...");
