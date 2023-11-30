@@ -29,6 +29,10 @@ public class RunPeer {
         parseCommonConfig();
         parsePeerInfo();
         thisPeer = allPeers.get(peerID);
+
+        if(thisPeer == null) {
+            throw new RuntimeException("Invalid peerID: inputted peerID not found in PeerInfo.cfg!");
+        }
     }
 
     public void run() {
@@ -111,7 +115,7 @@ public class RunPeer {
 //        Socket socket = new Socket(connectToThisPeer.getHostname(), connectToThisPeer.getPort());
 //        sendHandshake(socket, connectToThisPeer);
 //        sendBitfield(socket, connectToThisPeer);
-        System.out.println("[" + getCurrentTime() + "]: Peer [" + thisPeer.getPeerID() + "] is connected from Peer [" + connectToThisPeer.getPeerID() + "]. ");
+        System.out.println("[" + getCurrentTime() + "]: Peer [" + thisPeer.getPeerID() + "] makes a connection to Peer [" + connectToThisPeer.getPeerID() + "]. ");
 
     }
 }
