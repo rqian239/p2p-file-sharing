@@ -1,7 +1,10 @@
+import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.Hashtable;
+import java.util.HashMap;
 import java.util.Properties;
+import java.util.Scanner;
 
 public class RunPeer {
 
@@ -14,8 +17,13 @@ public class RunPeer {
 
     Peer thisPeer;
 
-    public RunPeer(int peerID) {
+    HashMap<Integer, Peer> allPeers;
 
+    // Constructor
+    public RunPeer(int peerID) {
+        allPeers = new HashMap<>();
+        parseCommonConfig();
+        parsePeerInfo();
     }
 
     public void parseCommonConfig() {
@@ -36,21 +44,30 @@ public class RunPeer {
 
     }
 
-    public void parsePeerInfo(Hashtable<Integer, Peer> Peers){
-        // File peerConfig = new File("../PeerInfo.cfg");
+    public void parsePeerInfo(){
+        File peerConfigFile = new File(Constants.PEER_INFO_CONFIG_FILE);
 
-//        Scanner scnr = new Scanner("../PeerInfo.cfg");
-//        while(scnr.hasNextLine()) {
-//            String line = scnr.nextLine();
-//            String [] variables = line.split(" ");
-//            int peerID = Integer.parseInt(variables[0]);
-//            String hostname = variables[1];
-//            int port = Integer.parseInt(variables[2]);
-//            boolean hasFile = Integer.parseInt(variables[3]) == 1;
-//            Peer peer = new Peer(peerID, hostname, port, hasFile, 306);
-//            System.out.println("Peer stuff" + peer.getPeerID() + " " + peer.getHostname() + " " + peer.getPort() + " " + peer.isHasFile());
-//            Peers.put(peer.getPeerID(), peer);
-//        }
-//        scnr.close();
+        try {
+            Scanner scnr = new Scanner(peerConfigFile);
+            while (scnr.hasNextLine()) {
+                String line = scnr.nextLine();
+                String[] variables = line.split(" ");
+                int peerID = Integer.parseInt(variables[0]);
+                String hostname = variables[1];
+                int port = Integer.parseInt(variables[2]);
+                boolean hasFile = Integer.parseInt(variables[3]) == 1;
+                Peer peer = new Peer(peerID, hostname, port, hasFile, calculateNumPieces());
+                allPeers.put(peer.getPeerID(), peer);
+                Peer current = allPeers.get(peerID);
+                System.out.println("PARSED PEER INFO : " + current.getPeerID() + " " + current.getHostname() + " " + current.getPort() + " " + current.isHasFile());
+            }
+            scnr.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public int calculateNumPieces() {
+        return (int) Math.ceil((double)fileSize / (double)pieceSize);
     }
 }

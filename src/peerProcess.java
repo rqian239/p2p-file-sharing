@@ -23,6 +23,8 @@ public class peerProcess {
 
         int peerID = Integer.parseInt(args[0]);
 
+        RunPeer runProcess = new RunPeer(peerID);
+
 //        // Create a Peer object
 //        Peer peer = Peers.get(peerID);
 //        Map<Integer, AbstractMap.SimpleEntry<Peer, Socket>> peerMap = new HashMap<>();
