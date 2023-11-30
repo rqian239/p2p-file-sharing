@@ -33,7 +33,10 @@ public class RunPeer {
 
     public void run() {
 
+        // Get current peer ID
         int thisPeerID = thisPeer.getPeerID();
+
+        // Start listening
 
         // Connect to every previous peer
         for(Integer id : allPeers.keySet()) {
