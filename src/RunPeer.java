@@ -1,13 +1,13 @@
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
+import messages.Handshake;
+
+import java.io.*;
 import java.net.Socket;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Properties;
 import java.util.Scanner;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class RunPeer {
 
@@ -18,11 +18,11 @@ public class RunPeer {
     int fileSize;
     int pieceSize;
 
-    Peer thisPeer;
+    final Peer thisPeer;
 
     Server server;
 
-    HashMap<Integer, Peer> allPeers;
+    static ConcurrentHashMap<Integer, Peer> allPeers;
 
     // Threads
     Thread serverThread;
@@ -30,7 +30,7 @@ public class RunPeer {
     // Constructor
     public RunPeer(int peerID) {
         // Create Hashmap to hold all peer objects
-        allPeers = new HashMap<>();
+        allPeers = new ConcurrentHashMap<>();
 
         // Parse configs
         parseCommonConfig();
@@ -40,7 +40,7 @@ public class RunPeer {
         thisPeer = allPeers.get(peerID);
 
         // Create server object to start listening to connections
-        server = new Server(thisPeer.getPort());
+        server = new Server(thisPeer.getPort(), thisPeer.getPeerID());
 
         if(thisPeer == null) {
             throw new RuntimeException("Invalid peerID: inputted peerID not found in PeerInfo.cfg!");
@@ -114,7 +114,7 @@ public class RunPeer {
         return (int) Math.ceil((double)fileSize / (double)pieceSize);
     }
 
-    private static String getCurrentTime() {
+    public static String getCurrentTime() {
         // Get the current time
         LocalDateTime currentTime = LocalDateTime.now();
 
@@ -127,9 +127,22 @@ public class RunPeer {
 
     private void connect(Peer connectToThisPeer) throws IOException {
         Socket socket = new Socket(connectToThisPeer.getHostname(), connectToThisPeer.getPort());
-//        sendHandshake(socket, connectToThisPeer);
+        sendHandshake(socket, thisPeer.getPeerID(), connectToThisPeer);
 //        sendBitfield(socket, connectToThisPeer);
         System.out.println("[" + getCurrentTime() + "]: Peer [" + thisPeer.getPeerID() + "] makes a connection to Peer [" + connectToThisPeer.getPeerID() + "]. ");
 
+    }
+
+    private static void sendHandshake(Socket socket, int thisPeerID, Peer connectToThisPeer) {
+        Handshake handshake = new Handshake(thisPeerID);
+        byte[] handshakeBytes = handshake.createHandshakeMessage();
+        try {
+            OutputStream out = socket.getOutputStream();
+            out.write(handshakeBytes);
+            out.flush();
+            out.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

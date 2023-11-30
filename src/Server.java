@@ -8,14 +8,16 @@ import java.util.concurrent.Executors;
 public class Server implements Runnable {
 
     private final int sPort;  //The server will be listening on this port number
+    private final int thisPeerID;
 
     // TODO: make a connectedTo and connectedFrom list
     ArrayList<ServerConnectionHandler> connectedFrom;
 
     ExecutorService pool = Executors.newCachedThreadPool();
 
-    public Server(int sPort) {
+    public Server(int sPort, int thisPeerID) {
         this.sPort = sPort;
+        this.thisPeerID = thisPeerID;
         connectedFrom = new ArrayList<>();
     }
 
@@ -30,7 +32,7 @@ public class Server implements Runnable {
                 // Accept a new connection
                 Socket clientSocket = serverSocket.accept();
                 System.out.println("SERVER on port " + sPort + " connected to client!");
-                ServerConnectionHandler clientThread = new ServerConnectionHandler(clientSocket);
+                ServerConnectionHandler clientThread = new ServerConnectionHandler(clientSocket, thisPeerID);
                 connectedFrom.add(clientThread);
 
                 pool.execute(clientThread);
