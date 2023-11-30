@@ -19,22 +19,22 @@ public class peerProcess {
         if (args.length != 1) {
             throw new RuntimeException("PeerID not specified!");
         }
-        Hashtable<Integer, Peer> Peers = new Hashtable<Integer, Peer>();
+//        Hashtable<Integer, Peer> Peers = new Hashtable<Integer, Peer>();
 
         int peerID = Integer.parseInt(args[0]);
 
-        // Create a Peer object
-        Peer peer = Peers.get(peerID);
-        Map<Integer, AbstractMap.SimpleEntry<Peer, Socket>> peerMap = new HashMap<>();
+//        // Create a Peer object
+//        Peer peer = Peers.get(peerID);
+//        Map<Integer, AbstractMap.SimpleEntry<Peer, Socket>> peerMap = new HashMap<>();
 
         // Start the peer process
-        try {
-            startPeerProcess(peer);
-            checkInterested(peer, peerMap);
-        } catch (IOException e) {
-            System.err.println("Error starting the peer process: " + e.getMessage());
-            e.printStackTrace();
-        }
+//        try {
+//            startPeerProcess(peer);
+//            checkInterested(peer, peerMap);
+//        } catch (IOException e) {
+//            System.err.println("Error starting the peer process: " + e.getMessage());
+//            e.printStackTrace();
+//        }
     }
     // private static Peer createPeer(int peerID) {
         
