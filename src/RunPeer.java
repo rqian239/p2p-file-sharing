@@ -2,6 +2,10 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Properties;
 import java.util.Scanner;
@@ -25,6 +29,23 @@ public class RunPeer {
         parseCommonConfig();
         parsePeerInfo();
         thisPeer = allPeers.get(peerID);
+    }
+
+    public void run() {
+
+        int thisPeerID = thisPeer.getPeerID();
+
+        // Connect to every previous peer
+        for(Integer id : allPeers.keySet()) {
+            if(id < thisPeerID) {
+                try {
+                    startPeerProcess(allPeers.get(id));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
     }
 
     public void parseCommonConfig() {
@@ -70,5 +91,24 @@ public class RunPeer {
 
     public int calculateNumPieces() {
         return (int) Math.ceil((double)fileSize / (double)pieceSize);
+    }
+
+    private static String getCurrentTime() {
+        // Get the current time
+        LocalDateTime currentTime = LocalDateTime.now();
+
+        // Define the desired date-time format
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
+
+        // Format the current time
+        return currentTime.format(formatter);
+    }
+
+    private void startPeerProcess(Peer connectToThisPeer) throws IOException {
+//        Socket socket = new Socket(connectToThisPeer.getHostname(), connectToThisPeer.getPort());
+//        sendHandshake(socket, connectToThisPeer);
+//        sendBitfield(socket, connectToThisPeer);
+        System.out.println("[" + getCurrentTime() + "]: Peer [" + thisPeer.getPeerID() + "] is connected from Peer [" + connectToThisPeer.getPeerID() + "]. ");
+
     }
 }

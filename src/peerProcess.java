@@ -25,6 +25,8 @@ public class peerProcess {
 
         RunPeer runProcess = new RunPeer(peerID);
 
+        runProcess.run();
+
 //        // Create a Peer object
 //        Peer peer = Peers.get(peerID);
 //        Map<Integer, AbstractMap.SimpleEntry<Peer, Socket>> peerMap = new HashMap<>();
@@ -47,15 +49,6 @@ public class peerProcess {
 
     //     // return new Peer(peerID, hostname, port, hasFile, numPieces);
     // }
-
-    private static void startPeerProcess(Peer peer) throws IOException {
-        /*System.out.println("Peer " + peer.getPeerID() + " starting...");
-        Socket socket = new Socket(peer.getHostname(), peer.getPort());
-        sendHandshake(socket, peer);
-        sendBitfield(socket, peer);
-        System.out.println("Peer " + peer.getPeerID() + " started successfully!");*/
-
-    }
 
     private static void sendHandshake(Socket socket, Peer peer) {
         messages.Handshake handshake = new messages.Handshake(peer.getPeerID());
