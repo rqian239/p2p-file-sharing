@@ -115,15 +115,12 @@ public class PeerProcess {
             byte[] bitfieldBytes = peer.getBitmap().toByteArray();
 
             // Prepare the message
-            int messageLength = 1 + bitfieldBytes.length;  // 1 byte for message type
-            ByteBuffer messageBuffer = ByteBuffer.allocate(4 + messageLength);
-            messageBuffer.putInt(messageLength);  // Message length
-            messageBuffer.put((byte) Constants.BITFIELD);  // Message type
-            messageBuffer.put(bitfieldBytes);  // Bitfield
+            messages.Message bitfieldMessage = new messages.Message((byte) 5, bitfieldBytes);
+            byte[] messageBytes = bitfieldMessage.createMessageBytes();
 
             // Send the message
             OutputStream outputStream = socket.getOutputStream();
-            outputStream.write(messageBuffer.array());
+            outputStream.write(messageBytes);
         } catch (IOException e) {
             e.printStackTrace();
         }
