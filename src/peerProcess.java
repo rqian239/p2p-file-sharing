@@ -21,28 +21,11 @@ public class peerProcess {
         }
         Hashtable<Integer, Peer> Peers = new Hashtable<Integer, Peer>();
 
-        parsePeerInfo(Peers);
         int peerID = Integer.parseInt(args[0]);
 
         // Create a Peer object
         Peer peer = Peers.get(peerID);
         Map<Integer, AbstractMap.SimpleEntry<Peer, Socket>> peerMap = new HashMap<>();
-        
-
-        // Parse Common.cfg file
-        Properties properties = new Properties();
-        try(FileInputStream in = new FileInputStream(Constants.COMMON_CONFIG_FILE)) {
-            properties.load(in);
-        } 
-        catch (IOException e) {
-            e.printStackTrace();
-        }
-        int numberOfPreferredNeighbors = Integer.parseInt(properties.getProperty("NumberOfPreferredNeighbors"));
-        int unchokingInterval = Integer.parseInt(properties.getProperty("UnchokingInterval"));
-        int optimisticUnchokingInterval = Integer.parseInt(properties.getProperty("OptimisticUnchokingInterval"));
-        String dataFilename = properties.getProperty("FileName");
-        int fileSize = Integer.parseInt(properties.getProperty("FileSize"));
-        int pieceSize = Integer.parseInt(properties.getProperty("PieceSize"));
 
         // Start the peer process
         try {
@@ -52,24 +35,6 @@ public class peerProcess {
             System.err.println("Error starting the peer process: " + e.getMessage());
             e.printStackTrace();
         }
-    }
-
-    private static void parsePeerInfo(Hashtable<Integer, Peer> Peers){
-        // File peerConfig = new File("../PeerInfo.cfg");
-
-//        Scanner scnr = new Scanner("../PeerInfo.cfg");
-//        while(scnr.hasNextLine()) {
-//            String line = scnr.nextLine();
-//            String [] variables = line.split(" ");
-//            int peerID = Integer.parseInt(variables[0]);
-//            String hostname = variables[1];
-//            int port = Integer.parseInt(variables[2]);
-//            boolean hasFile = Integer.parseInt(variables[3]) == 1;
-//            Peer peer = new Peer(peerID, hostname, port, hasFile, 306);
-//            System.out.println("Peer stuff" + peer.getPeerID() + " " + peer.getHostname() + " " + peer.getPort() + " " + peer.isHasFile());
-//            Peers.put(peer.getPeerID(), peer);
-//        }
-//        scnr.close();
     }
     // private static Peer createPeer(int peerID) {
         
