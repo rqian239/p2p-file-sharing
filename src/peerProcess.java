@@ -15,12 +15,6 @@ import java.util.Vector;
 
 public class peerProcess {
 
-    // Config filenames
-    static final String COMMON_CONFIG_FILE = "../Common.cfg";
-    static final String PEER_INFO_CONFIG_FILE = "../PeerInfo.cfg";
-
-
-
     public static void main(String[] args) {
         if (args.length != 1) {
             throw new RuntimeException("PeerID not specified!");
@@ -37,7 +31,7 @@ public class peerProcess {
 
         // Parse Common.cfg file
         Properties properties = new Properties();
-        try(FileInputStream in = new FileInputStream(COMMON_CONFIG_FILE)) {
+        try(FileInputStream in = new FileInputStream(Constants.COMMON_CONFIG_FILE)) {
             properties.load(in);
         } 
         catch (IOException e) {

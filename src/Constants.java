@@ -12,4 +12,8 @@ public class Constants {
     public static final byte BITFIELD = 5;
     public static final byte REQUEST = 6;
     public static final byte PIECE = 7;
+
+    // Filepaths
+    static final String COMMON_CONFIG_FILE = "../Common.cfg";
+    static final String PEER_INFO_CONFIG_FILE = "../PeerInfo.cfg";
 }
