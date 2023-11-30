@@ -70,8 +70,8 @@ public class PeerProcess {
             int peerID = Integer.parseInt(variables[0]);
             String hostname = variables[1];
             int port = Integer.parseInt(variables[2]);
-            int bitfield = Integer.parseInt(variables[3]);
-            Peer peer = new Peer(peerID, hostname, port, bitfield, 306);
+            boolean hasFile = Integer.parseInt(variables[3]) == 1;
+            Peer peer = new Peer(peerID, hostname, port, hasFile, 306);
             System.out.println("Peer stuff" + peer.getPeerID() + " " + peer.getHostname() + " " + peer.getPort() + " " + peer.isHasFile());
             Peers.put(peer.getPeerID(), peer);
         }

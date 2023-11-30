@@ -4,14 +4,14 @@ public class Peer {
     private final int peerID;
     private final String hostname;
     private final int port;
-    private int hasFile;
+    private boolean hasFile;
     private final int numPieces;  // also the number of bits in the bitmap
 
     private final BitSet bitmap;
 
     private boolean choked = false;
 
-    public Peer(int peerID, String hostname, int port, int hasFile, int numPieces) {
+    public Peer(int peerID, String hostname, int port, boolean hasFile, int numPieces) {
         this.peerID = peerID;
         this.hostname = hostname;
         this.port = port;
@@ -20,11 +20,10 @@ public class Peer {
 
         this.bitmap = new BitSet(numPieces);
 
-        if(hasFile == 1) {
+        if(hasFile) {
             // Set all bits to 1
             bitmap.set(0, numPieces);
-        } 
-        else{
+        } else {
             // Set all bits to 0
             bitmap.clear();
         }
@@ -53,12 +52,7 @@ public class Peer {
     }
 
     public boolean isHasFile() {
-        if(hasFile == 1){
-            return true;
-        }
-        else{
-            return false;
-        }
+        return hasFile;
     }
 
     public int getNumPieces() {
@@ -74,7 +68,7 @@ public class Peer {
     }
 
     // Setters
-    public void setHasFile(int hasFile) {
+    public void setHasFile(boolean hasFile) {
         this.hasFile = hasFile;
     }
 
