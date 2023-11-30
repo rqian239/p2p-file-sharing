@@ -24,6 +24,7 @@ public class RunPeer {
         allPeers = new HashMap<>();
         parseCommonConfig();
         parsePeerInfo();
+        thisPeer = allPeers.get(peerID);
     }
 
     public void parseCommonConfig() {
