@@ -22,6 +22,7 @@ public class RunPeer {
     final Peer thisPeer;
     Server server;
     static ConcurrentHashMap<Integer, Peer> allPeers;
+    static ConcurrentHashMap<Integer, Client> allClients;   //Key is peerID we connect to - Value is the client object
     // Threads
     Thread serverThread;
 
@@ -30,17 +31,21 @@ public class RunPeer {
         // Create Hashmap to hold all peer objects
         allPeers = new ConcurrentHashMap<>();
 
+        // Create Hashmap to hold all clients
+        allClients = new ConcurrentHashMap<>();
+
         // Parse configs
         parseCommonConfig();
         parsePeerInfo();
 
         // Set current peer object
         thisPeer = allPeers.get(peerID);
-        // Create server object to start listening to connections
-        server = new Server(thisPeer.getPort(), thisPeer.getPeerID());
         if(thisPeer == null) {
             throw new RuntimeException("Invalid peerID: inputted peerID not found in PeerInfo.cfg!");
         }
+
+        // Create server object to start listening to connections
+        server = new Server(thisPeer.getPort(), thisPeer.getPeerID());
     }
 
     public void run() {
@@ -51,10 +56,12 @@ public class RunPeer {
         serverThread.start();
 
         // Connect to every previous peer
-        for(Integer id : allPeers.keySet()) {
-            if(id < thisPeerID) {
+        for(Integer connectToThisID : allPeers.keySet()) {
+            if(connectToThisID < thisPeerID) {
                 try {
-                    connect(allPeers.get(id));
+                    Client newClient = new Client(thisPeerID);
+                    allClients.put(connectToThisID, newClient);
+                    newClient.connect(allPeers.get(connectToThisID));
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -117,27 +124,6 @@ public class RunPeer {
 
         // Format the current time
         return currentTime.format(formatter);
-    }
-
-    private void connect(Peer connectToThisPeer) throws IOException {
-        Socket socket = new Socket(connectToThisPeer.getHostname(), connectToThisPeer.getPort());
-        sendHandshake(socket, thisPeer.getPeerID(), connectToThisPeer);
-//        sendBitfield(socket, connectToThisPeer);
-        System.out.println("[" + getCurrentTime() + "]: Peer [" + thisPeer.getPeerID() + "] makes a connection to Peer [" + connectToThisPeer.getPeerID() + "]. ");
-
-    }
-
-    private static void sendHandshake(Socket socket, int thisPeerID, Peer connectToThisPeer) {
-        Handshake handshake = new Handshake(thisPeerID);
-        byte[] handshakeBytes = handshake.createHandshakeMessage();
-        try {
-            OutputStream out = socket.getOutputStream();
-            out.write(handshakeBytes);
-            out.flush();
-            out.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 
     private static void sendBitfield(Socket socket, Peer peer) {
