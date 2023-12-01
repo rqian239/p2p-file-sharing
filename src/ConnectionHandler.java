@@ -33,31 +33,53 @@ public class ConnectionHandler implements Runnable {
 //                }
 //                returnHandshake();
 //            }
-            switch(currentConnectionState) {
+//            switch(currentConnectionState) {
+//
+//                // This case occurs when this peer initiates a connection and waits for a handshake in return
+//                case Constants.SENT_HANDSHAKE_AWAITING_HANDSHAKE:
+//                    receiveHandshake();
+//                    // TODO: send bitfield here
+//                    break;
+//
+//                // This case occurs when this peer did not initiate the connection and receives a handshake from a different peer
+//                case Constants.HAVE_NOT_SENT_HANDSHAKE_AWAITING_HANDSHAKE:
+//                    receiveHandshake();
+//                    if(client == null) {
+//                        createClient();
+//                    }
+//                    returnHandshake();
+//                    break;
+//
+//                case Constants.SENT_BITFIELD_AWAITING_BITFIELD:
+//
+//                    break;
+//
+//                case Constants.HAVE_NOT_SENT_BITFIELD_AWAITING_BITFIELD:
+//
+//
+//            }
 
-                // This case occurs when this peer initiates a connection and waits for a handshake in return
-                case Constants.SENT_HANDSHAKE_AWAITING_HANDSHAKE:
-                    receiveHandshake();
-                    // TODO: send bitfield here
-                    break;
+            if(!handshakeReceived) {
 
-                // This case occurs when this peer did not initiate the connection and receives a handshake from a different peer
-                case Constants.HAVE_NOT_SENT_HANDSHAKE_AWAITING_HANDSHAKE:
-                    receiveHandshake();
-                    if(client == null) {
-                        createClient();
-                    }
+                receiveHandshake();
+                if(client == null) {
+                    createClient();
+                }
+
+                // If we receive a handshake from a peer with a lower ID
+                if(connectedPeerID < thisPeerID) {
+                    // TODO: return a bitfield
+                } else {
                     returnHandshake();
-                    break;
+                }
 
-                case Constants.SENT_BITFIELD_AWAITING_BITFIELD:
 
-                    break;
+            } else {
 
-                case Constants.HAVE_NOT_SENT_BITFIELD_AWAITING_BITFIELD:
-
+                // TODO: Read other messages
 
             }
+
         } 
         catch (IOException e) {
             e.printStackTrace();
