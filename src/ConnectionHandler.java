@@ -3,7 +3,7 @@ import java.io.IOException;
 import java.net.Socket;
 import java.nio.ByteBuffer;
 
-public class ServerConnectionHandler implements Runnable {
+public class ConnectionHandler implements Runnable {
 
     Socket socket;
     int connectedPeerID;
@@ -13,7 +13,7 @@ public class ServerConnectionHandler implements Runnable {
 
     boolean handshakeReceived = false;
 
-    public ServerConnectionHandler(Socket socket, int thisPeerID) {
+    public ConnectionHandler(Socket socket, int thisPeerID) {
         this.socket = socket;
         this.thisPeerID = thisPeerID;
     }

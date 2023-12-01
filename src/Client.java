@@ -11,7 +11,7 @@ public class Client {
     private final int thisPeerID;
     private int connectedPeerID;
 
-    private ServerConnectionHandler connectionHandler;
+    private ConnectionHandler connectionHandler;
     private Thread listenThread;
 
     public Client(int thisPeerID) {
@@ -40,7 +40,7 @@ public class Client {
     }
 
     public void listenForIncomingMessages() {
-        connectionHandler = new ServerConnectionHandler(socket, thisPeerID);
+        connectionHandler = new ConnectionHandler(socket, thisPeerID);
         connectionHandler.setClient(this);
         listenThread = new Thread(connectionHandler);
         listenThread.start();

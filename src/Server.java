@@ -11,7 +11,7 @@ public class Server implements Runnable {
     private final int thisPeerID;
 
     // TODO: make a connectedTo and connectedFrom list
-    ArrayList<ServerConnectionHandler> connectedFrom;
+    ArrayList<ConnectionHandler> connectedFrom;
 
     ExecutorService pool = Executors.newCachedThreadPool();
 
@@ -32,10 +32,10 @@ public class Server implements Runnable {
                 // Accept a new connection
                 Socket clientSocket = serverSocket.accept();
                 System.out.println("SERVER on port " + sPort + " connected to client!");
-                ServerConnectionHandler clientThread = new ServerConnectionHandler(clientSocket, thisPeerID);
-                connectedFrom.add(clientThread);
+                ConnectionHandler connectionHandlerForIncomingConnection = new ConnectionHandler(clientSocket, thisPeerID);
+                connectedFrom.add(connectionHandlerForIncomingConnection);
 
-                pool.execute(clientThread);
+                pool.execute(connectionHandlerForIncomingConnection);
 
             }
         } catch (IOException e) {
