@@ -9,6 +9,8 @@ public class ServerConnectionHandler implements Runnable {
     int connectedPeerID;
     int thisPeerID;
 
+    Client client = null;
+
     boolean handshakeReceived = false;
 
     public ServerConnectionHandler(Socket socket, int thisPeerID) {
@@ -22,12 +24,32 @@ public class ServerConnectionHandler implements Runnable {
 
         // Expect to receive handshake
         try {
-            receiveHandshake();
+            if(!handshakeReceived) {
+                receiveHandshake();
+                if(client == null) {
+                    createClient();
+                }
+                returnHandshake();
+            }
         } 
         catch (IOException e) {
             e.printStackTrace();
         }
 
+        System.out.println("ConnectionHandler exiting...");
+
+    }
+
+    public void returnHandshake() {
+        client.sendHandshake(socket, thisPeerID);
+    }
+
+    public void createClient() {
+        client = new Client(thisPeerID);
+    }
+
+    public void setClient(Client client) {
+        this.client = client;
     }
 
     public void receiveHandshake() throws IOException {

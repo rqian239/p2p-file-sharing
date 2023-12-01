@@ -62,6 +62,7 @@ public class RunPeer {
                     Client newClient = new Client(thisPeerID);
                     allClients.put(connectToThisID, newClient);
                     newClient.connect(allPeers.get(connectToThisID));
+                    newClient.listenForIncomingMessages();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }

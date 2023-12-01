@@ -6,10 +6,13 @@ import java.net.Socket;
 
 public class Client {
 
-    Socket socket;
+    private Socket socket;
 
-    int thisPeerID;
-    int connectedPeerID;
+    private final int thisPeerID;
+    private int connectedPeerID;
+
+    private ServerConnectionHandler connectionHandler;
+    private Thread listenThread;
 
     public Client(int thisPeerID) {
         this.thisPeerID = thisPeerID;
@@ -17,13 +20,13 @@ public class Client {
 
     public void connect(Peer connectToThisPeer) throws IOException {
         this.socket = new Socket(connectToThisPeer.getHostname(), connectToThisPeer.getPort());
-        sendHandshake(socket, thisPeerID, connectToThisPeer);
+        sendHandshake(socket, thisPeerID);
 //        sendBitfield(socket, connectToThisPeer);
         System.out.println("[" + RunPeer.getCurrentTime() + "]: Peer [" + thisPeerID + "] makes a connection to Peer [" + connectToThisPeer.getPeerID() + "]. ");
 
     }
 
-    private static void sendHandshake(Socket socket, int thisPeerID, Peer connectToThisPeer) {
+    public void sendHandshake(Socket socket, int thisPeerID) {
         Handshake handshake = new Handshake(thisPeerID);
         byte[] handshakeBytes = handshake.createHandshakeMessage();
         try {
@@ -34,6 +37,13 @@ public class Client {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public void listenForIncomingMessages() {
+        connectionHandler = new ServerConnectionHandler(socket, thisPeerID);
+        connectionHandler.setClient(this);
+        listenThread = new Thread(connectionHandler);
+        listenThread.start();
     }
 
 }
