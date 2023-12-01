@@ -44,6 +44,13 @@ public class RunPeer {
             throw new RuntimeException("Invalid peerID: inputted peerID not found in PeerInfo.cfg!");
         }
 
+        // Print out log to show that peer has been set up
+        System.out.println("Peer " + thisPeer.getPeerID() + " start. Set peer variables");
+        System.out.println("Hostname: " + thisPeer.getHostname());
+        System.out.println("Port Number: " + thisPeer.getPort());
+        System.out.println("Has File? " + thisPeer.isHasFile());
+        System.out.println("----------------------------------------------------------------");
+
         // Create server object to start listening to connections
         server = new Server(thisPeer.getPort(), thisPeer.getPeerID());
     }
@@ -87,6 +94,19 @@ public class RunPeer {
         this.fileSize = Integer.parseInt(properties.getProperty("FileSize"));
         this.pieceSize = Integer.parseInt(properties.getProperty("PieceSize"));
 
+        // Print out logs
+        System.out.println("COMMON CONFIG VARIABLES SET.");
+        System.out.println("NumberOfPreferredNeighbors: " + numberOfPreferredNeighbors);
+        System.out.println("UnchokingInterval: " + unchokingInterval);
+        System.out.println("OptimisticUnchokingInterval: " + optimisticUnchokingInterval);
+        System.out.println("FileName: " + dataFilename);
+        System.out.println("FileSize: " + fileSize);
+        System.out.println("PieceSize: " + pieceSize);
+        System.out.println("CALCULATED NUMBER OF PIECES: " + calculateNumPieces());
+        System.out.println("----------------------------------------------------------------");
+
+
+
     }
 
     public void parsePeerInfo(){
@@ -104,7 +124,7 @@ public class RunPeer {
                 Peer peer = new Peer(peerID, hostname, port, hasFile, calculateNumPieces());
                 allPeers.put(peer.getPeerID(), peer);
                 Peer current = allPeers.get(peerID);
-                System.out.println("PARSED PEER INFO : " + current.getPeerID() + " " + current.getHostname() + " " + current.getPort() + " " + current.isHasFile());
+//                System.out.println("PARSED PEER INFO : " + current.getPeerID() + " " + current.getHostname() + " " + current.getPort() + " " + current.isHasFile());
             }
             scnr.close();
         } catch (FileNotFoundException e) {
