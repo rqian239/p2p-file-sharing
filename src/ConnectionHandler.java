@@ -13,6 +13,8 @@ public class ConnectionHandler implements Runnable {
 
     boolean handshakeReceived = false;
 
+    private int currentConnectionState;
+
     public ConnectionHandler(Socket socket, int thisPeerID) {
         this.socket = socket;
         this.thisPeerID = thisPeerID;
@@ -24,12 +26,37 @@ public class ConnectionHandler implements Runnable {
 
         // Expect to receive handshake
         try {
-            if(!handshakeReceived) {
-                receiveHandshake();
-                if(client == null) {
-                    createClient();
-                }
-                returnHandshake();
+//            if(!handshakeReceived) {
+//                receiveHandshake();
+//                if(client == null) {
+//                    createClient();
+//                }
+//                returnHandshake();
+//            }
+            switch(currentConnectionState) {
+
+                // This case occurs when this peer initiates a connection and waits for a handshake in return
+                case Constants.SENT_HANDSHAKE_AWAITING_HANDSHAKE:
+                    receiveHandshake();
+                    // TODO: send bitfield here
+                    break;
+
+                // This case occurs when this peer did not initiate the connection and receives a handshake from a different peer
+                case Constants.HAVE_NOT_SENT_HANDSHAKE_AWAITING_HANDSHAKE:
+                    receiveHandshake();
+                    if(client == null) {
+                        createClient();
+                    }
+                    returnHandshake();
+                    break;
+
+                case Constants.SENT_BITFIELD_AWAITING_BITFIELD:
+
+                    break;
+
+                case Constants.HAVE_NOT_SENT_BITFIELD_AWAITING_BITFIELD:
+
+
             }
         } 
         catch (IOException e) {
@@ -50,6 +77,10 @@ public class ConnectionHandler implements Runnable {
 
     public void setClient(Client client) {
         this.client = client;
+    }
+
+    public void setConnectionState(int connectionState) {
+        this.currentConnectionState = connectionState;
     }
 
     public void receiveHandshake() throws IOException {

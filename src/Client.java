@@ -42,6 +42,7 @@ public class Client {
     public void listenForIncomingMessages() {
         connectionHandler = new ConnectionHandler(socket, thisPeerID);
         connectionHandler.setClient(this);
+        connectionHandler.setConnectionState(Constants.SENT_HANDSHAKE_AWAITING_HANDSHAKE);  // this is the client, so we have already sent the handshake and are waiting for an incoming handshake
         listenThread = new Thread(connectionHandler);
         listenThread.start();
     }

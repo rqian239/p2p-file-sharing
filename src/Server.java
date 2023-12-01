@@ -33,6 +33,7 @@ public class Server implements Runnable {
                 Socket clientSocket = serverSocket.accept();
                 System.out.println("SERVER on port " + sPort + " connected to client!");
                 ConnectionHandler connectionHandlerForIncomingConnection = new ConnectionHandler(clientSocket, thisPeerID);
+                connectionHandlerForIncomingConnection.setConnectionState(Constants.HAVE_NOT_SENT_HANDSHAKE_AWAITING_HANDSHAKE);
                 connectedFrom.add(connectionHandlerForIncomingConnection);
 
                 pool.execute(connectionHandlerForIncomingConnection);
