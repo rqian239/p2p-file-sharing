@@ -23,7 +23,8 @@ public class ServerConnectionHandler implements Runnable {
         // Expect to receive handshake
         try {
             receiveHandshake();
-        } catch (IOException e) {
+        } 
+        catch (IOException e) {
             e.printStackTrace();
         }
 
@@ -52,4 +53,6 @@ public class ServerConnectionHandler implements Runnable {
         connectedPeerID = ByteBuffer.wrap(handshake, 28, 4).getInt();
         return header.equals("P2PFILESHARINGPROJ");
     }
+
+    
 }
