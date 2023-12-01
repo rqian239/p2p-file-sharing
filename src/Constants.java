@@ -16,4 +16,10 @@ public class Constants {
     // Filepaths
     static final String COMMON_CONFIG_FILE = "../Common.cfg";
     static final String PEER_INFO_CONFIG_FILE = "../PeerInfo.cfg";
+
+    // Connection states
+    public static final int SENT_HANDSHAKE_AWAITING_HANDSHAKE = 0;
+    public static final int HAVE_NOT_SENT_HANDSHAKE_AWAITING_HANDSHAKE = 1;
+    public static final int SENT_BITFIELD_AWAITING_BITFIELD = 2;
+    public static final int HAVE_NOT_SENT_BITFIELD_AWAITING_BITFIELD = 3;
 }
