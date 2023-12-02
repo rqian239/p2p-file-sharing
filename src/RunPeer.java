@@ -22,7 +22,7 @@ public class RunPeer {
     final Peer thisPeer;
     Server server;
     static ConcurrentHashMap<Integer, Peer> allPeers;
-    static ConcurrentHashMap<Integer, Client> allClients;   //Key is peerID we connect to - Value is the client object
+    static ConcurrentHashMap<Integer, ConnectionHandler> allConnections;
     // Threads
     Thread serverThread;
 
@@ -32,7 +32,7 @@ public class RunPeer {
         allPeers = new ConcurrentHashMap<>();
 
         // Create Hashmap to hold all clients
-        allClients = new ConcurrentHashMap<>();
+        allConnections = new ConcurrentHashMap<>();
 
         // Parse configs
         parseCommonConfig();
@@ -67,9 +67,9 @@ public class RunPeer {
             if(connectToThisID < thisPeerID) {
                 try {
                     Client newClient = new Client(thisPeerID);
-                    allClients.put(connectToThisID, newClient);
                     newClient.connect(allPeers.get(connectToThisID));
                     newClient.listenForIncomingMessages();
+                    allConnections.put(connectToThisID, newClient.getConnectionHandler());
                 } catch (IOException e) {
                     e.printStackTrace();
                 }

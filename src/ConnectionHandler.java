@@ -52,6 +52,8 @@ public class ConnectionHandler implements Runnable {
                         sendBitfield(socket, thisPeer);
                         sentBitfield = true;
                     } else {
+                        // HERE THIS PEER IS THE "SERVER"
+                        RunPeer.allConnections.put(connectedPeerID, this);
                         returnHandshake();
                     }
 
@@ -202,6 +204,7 @@ public class ConnectionHandler implements Runnable {
 
     public void createClient() {
         client = new Client(thisPeerID);
+        client.setConnectionHandler(this);
     }
 
     public void setClient(Client client) {

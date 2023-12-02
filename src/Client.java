@@ -51,4 +51,11 @@ public class Client {
         outputStream.write(messageBytes);
     }
 
+    public void setConnectionHandler(ConnectionHandler connectionHandler) {
+        this.connectionHandler = connectionHandler;
+    }
+
+    public ConnectionHandler getConnectionHandler() {
+        return connectionHandler;
+    }
 }
