@@ -21,6 +21,8 @@ public class ConnectionHandler implements Runnable {
     boolean sentBitfield = false;
 
     BitSet otherPeerBitfield = null;
+
+    BitSet interestedPieces = null;
     
 
     public ConnectionHandler(Socket socket, int thisPeerID) {
@@ -28,6 +30,7 @@ public class ConnectionHandler implements Runnable {
         this.thisPeerID = thisPeerID;
         this.thisPeer = RunPeer.allPeers.get(thisPeerID);
         this.pieceSize = RunPeer.pieceSize;
+        interestedPieces = new BitSet(thisPeer.getNumPieces());
     }
 
     @Override
@@ -285,13 +288,16 @@ public class ConnectionHandler implements Runnable {
     }
 
     private boolean checkInterested() {
+        boolean interested = false;
+        interestedPieces.set(0, thisPeer.getNumPieces(), false);
         for (int i = 0; i < otherPeerBitfield.length(); i++) {
             if (otherPeerBitfield.get(i) && !thisPeer.getBitmap().get(i)) {
-                return true;
+                interestedPieces.set(i,true);
+                interested = true;
             }
         }
 
-        return false;
+        return interested;
     }
 
     public int sendPiece(Socket socket, int index, String fName, int pieceSize){
