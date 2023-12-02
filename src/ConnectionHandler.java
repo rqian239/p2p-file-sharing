@@ -1,9 +1,4 @@
-import java.io.BufferedInputStream;
-import java.io.DataInputStream;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.util.BitSet;
@@ -19,8 +14,6 @@ public class ConnectionHandler implements Runnable {
     Client client = null;
 
     boolean handshakeReceived = false;
-
-    private int currentConnectionState;
     
 
     public ConnectionHandler(Socket socket, int thisPeerID) {
@@ -36,39 +29,6 @@ public class ConnectionHandler implements Runnable {
 
         // Expect to receive handshake
         try {
-//            if(!handshakeReceived) {
-//                receiveHandshake();
-//                if(client == null) {
-//                    createClient();
-//                }
-//                returnHandshake();
-//            }
-//            switch(currentConnectionState) {
-//
-//                // This case occurs when this peer initiates a connection and waits for a handshake in return
-//                case Constants.SENT_HANDSHAKE_AWAITING_HANDSHAKE:
-//                    receiveHandshake();
-//                    // TODO: send bitfield here
-//                    break;
-//
-//                // This case occurs when this peer did not initiate the connection and receives a handshake from a different peer
-//                case Constants.HAVE_NOT_SENT_HANDSHAKE_AWAITING_HANDSHAKE:
-//                    receiveHandshake();
-//                    if(client == null) {
-//                        createClient();
-//                    }
-//                    returnHandshake();
-//                    break;
-//
-//                case Constants.SENT_BITFIELD_AWAITING_BITFIELD:
-//
-//                    break;
-//
-//                case Constants.HAVE_NOT_SENT_BITFIELD_AWAITING_BITFIELD:
-//
-//
-//            }
-
             if(!handshakeReceived) {
 
                 receiveHandshake();
@@ -85,14 +45,18 @@ public class ConnectionHandler implements Runnable {
                 sendBitfield(socket, thisPeer);
                 boolean interest = checkReceivedBitfield(socket, thisPeer);
                 if(!interest){
-                    for(int i = 0; i < thisPeer.getNumPieces(); i++){
-                        sendPiece(socket, i, "tree.jpg", pieceSize);
-                    }
+//                    for(int i = 0; i < thisPeer.getNumPieces(); i++){
+//                        sendPiece(socket, i, "tree.jpg", pieceSize);
+//                    }
+                    // TODO: REMOVE LATER, for now send the entire file
+                    System.out.println("Beginning to send entire image file...");
+                    sendEntireFile();
                 }
                 else{
-                    for(int i = 0; i < thisPeer.getNumPieces(); i++){
-                        receivePiece(socket, 1, "tree1.jpg", pieceSize);
-                    }
+//                    for(int i = 0; i < thisPeer.getNumPieces(); i++){
+//                        receivePiece(socket, 1, "tree1.jpg", pieceSize);
+//                    }
+                    readEntireFile();
                 }
 
             } else {
@@ -110,6 +74,36 @@ public class ConnectionHandler implements Runnable {
 
     }
 
+    private void readEntireFile() throws IOException {
+        InputStream inputStream = socket.getInputStream();
+        FileOutputStream fileOutputStream = new FileOutputStream("tree_read.jpg");
+
+        byte[] buffer = new byte[4096];
+        int bytesRead;
+
+        while ((bytesRead = inputStream.read(buffer)) != -1) {
+            fileOutputStream.write(buffer, 0, bytesRead);
+        }
+
+        System.out.println("File received");
+        fileOutputStream.close();
+    }
+
+    private void sendEntireFile() throws IOException {
+        OutputStream out = socket.getOutputStream();
+        FileInputStream fileInputStream = new FileInputStream(RunPeer.dataFilename);
+        byte[] buffer = new byte[4096];
+        int bytesRead;
+
+        while ((bytesRead = fileInputStream.read(buffer)) != -1) {
+            out.write(buffer, 0, bytesRead);
+        }
+
+        System.out.println("Image sent");
+        fileInputStream.close();
+        out.close();
+    }
+
     public void returnHandshake() {
         client.sendHandshake(socket, thisPeerID);
     }
@@ -120,10 +114,6 @@ public class ConnectionHandler implements Runnable {
 
     public void setClient(Client client) {
         this.client = client;
-    }
-
-    public void setConnectionState(int connectionState) {
-        this.currentConnectionState = connectionState;
     }
 
     public void receiveHandshake() throws IOException {
@@ -150,10 +140,10 @@ public class ConnectionHandler implements Runnable {
         return header.equals("P2PFILESHARINGPROJ");
     }
 
-    private static void sendBitfield(Socket socket, Peer peer) {
+    private void sendBitfield(Socket socket, Peer peer) {
         try {
             // Convert the BitSet to a byte array
-            System.out.println("Sending bitfield to peer " + peer.getPeerID() + " ----- Bitmap:"+peer.getBitmap().get(1));
+            System.out.println("Sending bitfield to peer [" + connectedPeerID + "] ----- My Bitmap:" + peer.getBitmap().get(1));   //TODO: what is getBitmap().get(1)?
             byte[] bitfieldBytes = peer.getBitmap().toByteArray();
 
             // Prepare the message
@@ -169,16 +159,17 @@ public class ConnectionHandler implements Runnable {
         }
     }
 
-    private static boolean checkReceivedBitfield(Socket socket, Peer peer) {
+    private boolean checkReceivedBitfield(Socket socket, Peer peer) {
         try {
-            System.out.println("Recieving bitfield to peer " + peer.getPeerID()+" ----- Bitmap:"+peer.getBitmap().get(1));
             DataInputStream in = new DataInputStream(socket.getInputStream());
-            // Read the message length
+
+            // Read the message length (first four bytes)
             int messageLength = in.readInt();
             // Read the message type
             byte messageType = in.readByte();
             
             if (messageType == Constants.BITFIELD) {
+                System.out.println("Received a bitfield from peer [" + connectedPeerID + "] ----- My Bitmap:" + peer.getBitmap().get(1)); //TODO: what is getBitmap().get(1)?
                 // Read the bitfield bytes
                 byte[] receivedBitfield = new byte[messageLength - 1]; // 1 byte for message type
                 in.readFully(receivedBitfield);
@@ -196,22 +187,17 @@ public class ConnectionHandler implements Runnable {
                 OutputStream outputStream = socket.getOutputStream();
                 if (interested) {
                     System.out.println("Sending interested message from peer " + peer.getPeerID());
-                    byte messageBytes = (byte)2; // Replace this with your message creation logic
-                    //  Write the message to the output stream
-                    outputStream.write(messageBytes);
-                    // Flush the output stream to ensure all data is sent
-                    outputStream.flush();
-                    // Close the output stream
+//                    byte messageBytes = (byte)2; // TODO: Replace this with your message creation logic
+//                    //  Write the message to the output stream
+//                    outputStream.write(messageBytes);
+//                    // Flush the output stream to ensure all data is sent
+//                    outputStream.flush();
+//                    // Close the output stream
                     return true;
                 } 
                 else {
-                    System.out.println("Sending not interested message from peer " + peer.getPeerID());
-                    byte messageBytes = (byte)3; // Replace this with your message creation logic
-                    //  Write the message to the output stream
-                    outputStream.write(messageBytes);
-                    // Flush the output stream to ensure all data is sent
-                    outputStream.flush();
-                    // Close the output stream
+                    System.out.println("Sending not interested message from peer [" + thisPeerID + "] to [" + connectedPeerID + "].");
+                    // TODO: Send a not interested message
                     return false;
                 }
             }
@@ -274,31 +260,10 @@ public class ConnectionHandler implements Runnable {
                 fos.write(fileBytes, 0, pieceSize);
             }
             fos.close();
-
-
-
-        //     System.out.println("Available in buff input stream " + bis.available()+" ----"+ pieceSize+"_______________"+index*pieceSize+" -------- - - -");
-        //     if(pieceSize >= bis.available()){
-        //         bis.read(fileBytes, 0, bis.available());
-        //     }
-        //     else{
-
-        //         bis.read(fileBytes, 0, pieceSize);
-        //     }
-
-        //     // Prepare the message
-        //     messages.Message pieceMessage = new messages.Message((byte) 7, fileBytes);
-        //     byte[] messageBytes = pieceMessage.createMessageBytes();
-
-        //     // Send the message
-        //     OutputStream outputStream = socket.getOutputStream();
-        //     outputStream.write(messageBytes);
-
         }
         catch(IOException e){
             e.printStackTrace();
         }
         return 0;
     }
-    // FileOutputStream(File file, boolean true)
 }
