@@ -16,7 +16,7 @@ public class Logger {
     
     //true for receivehandshake and false for sendhandshake pretty sure
     //can get rid of peerID1 if currpeerID will always be peerID1
-    public String logConnection(int peerID1, int peerID2, boolean connectedFrom) {
+    public static String logConnection(int peerID1, int peerID2, boolean connectedFrom) {
         String logMessage;
         if (connectedFrom) {
             //receives handshake
@@ -30,7 +30,7 @@ public class Logger {
     }
 
     //pass in neighbors as ints, may change into peers later? 
-    public String logChangePreferredNeighbors(int peerID1, int[] preferredNeighborIDs) {
+    public static String logChangePreferredNeighbors(int peerID1, int[] preferredNeighborIDs) {
         String logMessage = "[" + getCurrentTime() + "]: Peer " + peerID1 + " has the preferred neighbors ";
         StringBuilder neighborsList = new StringBuilder();
         for (int i = 0; i < preferredNeighborIDs.length; i++) {
@@ -43,22 +43,22 @@ public class Logger {
         return logMessage;
 
     }
-    public String logChangeOptUnchokeNeighbor(int peerID1, int optimisticUnchokedNeighbor){
+    public static String logChangeOptUnchokeNeighbor(int peerID1, int optimisticUnchokedNeighbor){
         String logMessage = "[" + getCurrentTime() + "]: Peer " + peerID1 + " has the optimistically unchoked neighbor " + optimisticUnchokedNeighbor;
         return logMessage;
     }
 
-    public String logReceiveUnchoke(int peerID1, int peerID2){
+    public static String logReceiveUnchoke(int peerID1, int peerID2){
         String logMessage = "[" + getCurrentTime() + "]: Peer " + peerID1 + " is unchoked by " + peerID2;
         return logMessage;
     }
     
-    public String logReceiveChoke(int peerID1, int peerID2){
+    public static String logReceiveChoke(int peerID1, int peerID2){
         String logMessage = "[" + getCurrentTime() + "]: Peer " + peerID1 + " is choked by " + peerID2;
         return logMessage;
     }
 
-    public String logReceiveHave(int peerID1, int peerID2, int pieceIndex){
+    public static String logReceiveHave(int peerID1, int peerID2, int pieceIndex){
         String logMessage = "[" + getCurrentTime() + "]: Peer " + peerID1 + " received the 'have' message from " + peerID2 + " for the piece " + pieceIndex;
         return logMessage;
     }
@@ -73,9 +73,16 @@ public class Logger {
         return logMessage;
     }
 
-    public static String logPieceDownloadedFrom(int peerID1, int peerID2, int pieceIndex, int totNumPieces){
-        String logMessage = "[" + getCurrentTime() + "]: Peer " + peerID1 + " has downloaded the piece " + pieceIndex + 
-        " from "+ peerID2 + ". Now the number of pieces it has is " + totNumPieces + ".";
+    public static String logPieceRequestedFrom(int peerID1, int peerID2, int pieceIndex) {
+        String logMessage = "[" + getCurrentTime() + "]: Peer " + peerID1 + " has requested the piece " + pieceIndex +
+                " from " + peerID2 + ".";
+        return logMessage;
+
+    }
+
+    public static String logPieceDownloadedFrom(int peerID1, int peerID2, int pieceIndex, int totNumPieces) {
+        String logMessage = "[" + getCurrentTime() + "]: Peer " + peerID1 + " has downloaded the piece " + pieceIndex +
+                " from " + peerID2 + ". Now the number of pieces it has is " + totNumPieces + ".";
         return logMessage;
 
     }

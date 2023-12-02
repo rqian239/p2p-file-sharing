@@ -95,9 +95,12 @@ public class ConnectionHandler implements Runnable {
                                 // TODO: send a request message
 
                                 // TODO: calculate the index we are requesting
-                                int requestPieceIndex = 999;
-
-                                sendRequestMessage(requestPieceIndex);
+                                //int requestPieceIndex = 999;
+                                for(int i = 0; i < thisPeer.getNumPieces(); i++) {
+                                    if (interestedPieces.get(i) == true) {
+                                        sendRequestMessage(i);
+                                    }
+                                }
                             }
 
 
@@ -116,9 +119,13 @@ public class ConnectionHandler implements Runnable {
                         case Constants.REQUEST:
                             // We send the piece back
                             //TODO: send the file to interested peer
-                            for(int i = 0; i < thisPeer.getNumPieces(); i++){
-                                sendPiece(socket, i, "tree.jpg", pieceSize);
-                            }
+                            byte[] intBuffer = new byte[4];
+                            System.arraycopy(receivedPayload, 0, intBuffer, 0, 4);
+                            ByteBuffer wrapped = ByteBuffer.wrap(intBuffer); // big-endian by default
+                            int index = wrapped.getInt();
+
+                            sendPiece(socket, index, "tree.jpg", pieceSize);
+
                             break;
 
                         case Constants.PIECE:
@@ -149,6 +156,7 @@ public class ConnectionHandler implements Runnable {
         byte[] payload = ByteBuffer.allocate(4).putInt(requestedPieceIndex).array();
         Message message = new Message(messageType, payload);
         byte[] messageBytes = message.createMessageBytes();
+        System.out.println(Logger.logPieceRequestedFrom(thisPeerID, connectedPeerID, requestedPieceIndex));
 
         client.sendMessage(socket, messageBytes);
     }
@@ -188,6 +196,7 @@ public class ConnectionHandler implements Runnable {
     }
 
     public void returnHandshake() {
+        System.out.println(Logger.logConnection(thisPeerID, connectedPeerID, false));
         client.sendHandshake(socket, thisPeerID);
     }
 
@@ -208,7 +217,7 @@ public class ConnectionHandler implements Runnable {
         // Validate the handshake message
         if (isValidHandshake(receivedHandshake)) {
             handshakeReceived = true;
-            System.out.println("[" + RunPeer.getCurrentTime() + "]: Peer [" + thisPeerID + "] received a handshake from Peer [" + connectedPeerID + "]. ");
+            System.out.println(Logger.logConnection(thisPeerID, connectedPeerID, true));
         } else {
             System.err.println("INVALID HANDSHAKE RECEIVED FROM PEER " + connectedPeerID);
         }
@@ -268,7 +277,7 @@ public class ConnectionHandler implements Runnable {
 
     public int sendPiece(Socket socket, int index, String fName, int pieceSize){
         try{
-            //System.out.println("Sending piece to peer " + thisPeer.getPeerID()+" ---- //////");
+            System.out.println("Sending piece " + index + " to Peer " + connectedPeerID+" from Peer "+thisPeerID);
 
             FileInputStream fis = new FileInputStream(fName);
             //BufferedInputStream bis = new BufferedInputStream(fis);
