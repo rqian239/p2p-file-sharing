@@ -105,17 +105,17 @@ public class ConnectionHandler implements Runnable {
 
                         case Constants.INTERESTED:
                             System.out.println(Logger.logReceiveInterested(thisPeerID, connectedPeerID));
-                            //TODO: receive file - should go to piece (interested returns index interested in)
+                            //TODO: send the file to interested peer
                             for(int i = 0; i < thisPeer.getNumPieces(); i++){
-                                receivePiece(socket, i, "tree1.jpg", pieceSize);
+                                sendPiece(socket, i, "tree.jpg", pieceSize);
                             }
                             break;
 
                         case Constants.NOT_INTERESTED:
                             System.out.println(Logger.logReceiveNotInterested(thisPeerID, connectedPeerID));
-                            //TODO: send file - should go to request (only sends piece requested)
+                            //TODO: other peer is not interested in our pieces, wait to receive file
                             for(int i = 0; i < thisPeer.getNumPieces(); i++){
-                                sendPiece(socket, i, "tree.jpg", pieceSize);
+                                receivePiece(socket, i, "tree1.jpg", pieceSize);
                             }
                             break;
                         case Constants.HAVE:
@@ -355,8 +355,9 @@ public class ConnectionHandler implements Runnable {
             //System.out.println("Received bytes: " + bytesRead);
             fos.write(fileBytes, 0, bytesRead);
 
-            RunPeer.allPeers.get(connectedPeerID).getBitmap().set(index);
-            System.out.println(Logger.logPieceDownloadedFrom(connectedPeerID, thisPeerID, index, RunPeer.allPeers.get(connectedPeerID).getBitmap().cardinality()));
+            // Update this bitmap
+            RunPeer.allPeers.get(thisPeerID).getBitmap().set(index);
+            System.out.println(Logger.logPieceDownloadedFrom(thisPeerID, connectedPeerID, index, RunPeer.allPeers.get(thisPeerID).getBitmap().cardinality()));
             fos.flush();
             fos.close();
             if(RunPeer.allPeers.get(thisPeerID).getNumPieces() == (index+1)){

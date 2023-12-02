@@ -81,7 +81,7 @@ public class Logger {
     }
 
     public static String logFileDownloaded(int peerID1){
-        String logMessage = "[" + getCurrentTime() + "]: Peer " + currpeerID + " has downloaded the complete file.";
+        String logMessage = "[" + getCurrentTime() + "]: Peer " + peerID1 + " has downloaded the complete file.";
         return logMessage;
     }
 
