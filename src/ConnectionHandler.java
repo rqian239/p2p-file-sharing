@@ -1,4 +1,3 @@
-import com.sun.org.apache.bcel.internal.Const;
 import messages.Message;
 
 import java.io.*;
@@ -65,17 +64,18 @@ public class ConnectionHandler implements Runnable {
                     int messageLength = readMessage.readInt();
                     // Read the message type
                     byte messageType = readMessage.readByte();
+                    // Read in the payload
+                    // Read the bitfield bytes
+                    byte[] receivedPayload = new byte[messageLength - 1]; // 1 byte for message type
+                    readMessage.readFully(receivedPayload);
+
 
                     // TODO: Switch statement for message type
                     switch (messageType) {
                         case Constants.BITFIELD:
 
                             // Parse the bitfield
-                            // Read the bitfield bytes
-                            byte[] receivedBitfield = new byte[messageLength - 1]; // 1 byte for message type
-                            readMessage.readFully(receivedBitfield);
-
-                            otherPeerBitfield = BitSet.valueOf(receivedBitfield);
+                            otherPeerBitfield = BitSet.valueOf(receivedPayload);
 
                             System.out.println("Received a bitfield from peer [" + connectedPeerID + "] ----- Other Bitmap:" + otherPeerBitfield.get(1)); //TODO: what is getBitmap().get(1)?
 
@@ -86,33 +86,46 @@ public class ConnectionHandler implements Runnable {
                             }
 
                             // TODO: Send interested/uninterested message
-                            sendInterested(checkInterested());  // send interested/uninterested message based on checkInterested();
+
+                            boolean areWeInterested = checkIfWeAreInterested();
+
+                            sendInterested(areWeInterested);  // send interested/uninterested message based on checkInterested();
+
+                            if(areWeInterested) {
+                                // TODO: send a request message
+
+                                // TODO: calculate the index we are requesting
+                                int requestPieceIndex = 999;
+
+                                sendRequestMessage(requestPieceIndex);
+                            }
+
+
                             break;
 
                         case Constants.INTERESTED:
                             System.out.println(Logger.logReceiveInterested(thisPeerID, connectedPeerID));
+                            break;
+
+                        case Constants.NOT_INTERESTED:
+                            System.out.println(Logger.logReceiveNotInterested(thisPeerID, connectedPeerID));
+                            break;
+                        case Constants.HAVE:
+                            //
+                            break;
+                        case Constants.REQUEST:
+                            // We send the piece back
                             //TODO: send the file to interested peer
                             for(int i = 0; i < thisPeer.getNumPieces(); i++){
                                 sendPiece(socket, i, "tree.jpg", pieceSize);
                             }
                             break;
 
-                        case Constants.NOT_INTERESTED:
-                            System.out.println(Logger.logReceiveNotInterested(thisPeerID, connectedPeerID));
-                            //TODO: other peer is not interested in our pieces, wait to receive file
-                            for(int i = 0; i < thisPeer.getNumPieces(); i++){
-                                receivePiece(socket, i, "tree_" + thisPeerID + ".jpg", pieceSize);
-                            }
-                            break;
-                        case Constants.HAVE:
-                            //
-                            break;
-                        case Constants.REQUEST:
-                            //
-                            break;
-
                         case Constants.PIECE:
-                            //
+
+                            // TODO: receive the piece here
+                            processPiece(receivedPayload, "tree" + thisPeerID + ".jpg");
+
                             break;
                     }
 
@@ -126,6 +139,18 @@ public class ConnectionHandler implements Runnable {
 
         System.out.println("ConnectionHandler exiting...");
 
+    }
+
+    private void sendRequestMessage(int requestedPieceIndex) throws IOException {
+        // Create message
+
+        byte messageType = Constants.REQUEST;
+
+        byte[] payload = ByteBuffer.allocate(4).putInt(requestedPieceIndex).array();
+        Message message = new Message(messageType, payload);
+        byte[] messageBytes = message.createMessageBytes();
+
+        client.sendMessage(socket, messageBytes);
     }
 
     private DataInputStream readMessage() throws IOException {
@@ -227,7 +252,8 @@ public class ConnectionHandler implements Runnable {
         client.sendMessage(socket, messageBytes);
     }
 
-    private boolean checkInterested() {
+    // Checks if we are interested in the other peer
+    private boolean checkIfWeAreInterested() {
         boolean interested = false;
         interestedPieces.set(0, thisPeer.getNumPieces(), false);
         for (int i = 0; i < otherPeerBitfield.length(); i++) {
@@ -261,7 +287,7 @@ public class ConnectionHandler implements Runnable {
             System.arraycopy(fileBytes, 0, payloadBytes, 4, bytesRead);
 
             // Prepare the message
-            messages.Message pieceMessage = new messages.Message((byte) 7, payloadBytes);
+            Message pieceMessage = new Message(Constants.PIECE, payloadBytes);
             byte[] messageBytes = pieceMessage.createMessageBytes();
 
             // Send the message
@@ -276,15 +302,12 @@ public class ConnectionHandler implements Runnable {
         return 0;
     }
     
-    public int receivePiece(Socket socket, int index, String fName, int pieceSize){
+    public int processPiece(byte[] payload, String fName){
         try{
-            //System.out.println("Receiving piece to peer " + thisPeer.getPeerID()+" ---- //////");
-            
-            DataInputStream in = new DataInputStream(socket.getInputStream());
-            int messageLength = in.readInt();
-            // Read the message type
-            byte messageType = in.readByte();
-            int indexT = in.readInt();
+            byte[] intBuffer = new byte[4];
+            System.arraycopy(payload, 0, intBuffer, 0, 4);
+            ByteBuffer wrapped = ByteBuffer.wrap(intBuffer); // big-endian by default
+            int index = wrapped.getInt();
 
             // File newfile = new File(fName);
             FileOutputStream fos = new FileOutputStream(fName, true);
@@ -297,7 +320,11 @@ public class ConnectionHandler implements Runnable {
 
             byte[] fileBytes = new byte[pieceSize];
             //System.out.println("In bytes " + in.available()+" ---- Message Length:"+messageLength +"  ----  Message Type: "+ messageType);
-            int bytesRead = in.read(fileBytes);
+            int bytesRead = payload.length - 4;
+
+            System.arraycopy(payload, 4, fileBytes, 0, bytesRead);
+
+
             //System.out.println("Received bytes: " + bytesRead);
             fos.write(fileBytes, 0, bytesRead);
 
