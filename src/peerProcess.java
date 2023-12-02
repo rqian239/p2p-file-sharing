@@ -125,54 +125,54 @@ public class peerProcess {
     //     }
     // }
 
-    // private static void checkReceivedBitfield(Socket socket, BitSet peerBitSet) {
-    // try {
-    //     DataInputStream in = new DataInputStream(socket.getInputStream());
-    //     // Read the message length
-    //     int messageLength = in.readInt();
-    //     // Read the message type
-    //     byte messageType = in.readByte();
+//     private static void checkReceivedBitfield(Socket socket, BitSet peerBitSet) {
+//     try {
+//         DataInputStream in = new DataInputStream(socket.getInputStream());
+//         // Read the message length
+//         int messageLength = in.readInt();
+//         // Read the message type
+//         byte messageType = in.readByte();
         
-    //     if (messageType == Constants.BITFIELD) {
-    //         // Read the bitfield bytes
-    //         byte[] receivedBitfield = new byte[messageLength - 1]; // 1 byte for message type
-    //         in.readFully(receivedBitfield);
+//         if (messageType == Constants.BITFIELD) {
+//             // Read the bitfield bytes
+//             byte[] receivedBitfield = new byte[messageLength - 1]; // 1 byte for message type
+//             in.readFully(receivedBitfield);
 
-    //         BitSet receivedBitSet = BitSet.valueOf(receivedBitfield);
+//             BitSet receivedBitSet = BitSet.valueOf(receivedBitfield);
 
-    //         boolean interested = false;
-    //         for (int i = 0; i < receivedBitSet.length(); i++) {
-    //             if (receivedBitSet.get(i) && !peerBitSet.get(i)) {
-    //                 interested = true;
-    //                 break;
-    //             }
-    //         }
+//             boolean interested = false;
+//             for (int i = 0; i < receivedBitSet.length(); i++) {
+//                 if (receivedBitSet.get(i) && !peerBitSet.get(i)) {
+//                     interested = true;
+//                     break;
+//                 }
+//             }
 
-    //         // Prepare and send the appropriate message
-    //         OutputStream outputStream = socket.getOutputStream();
-    //         if (interested) {
-    //             byte messageBytes = (byte)2; // Replace this with your message creation logic
-    //             //  Write the message to the output stream
-    //             outputStream.write(messageBytes);
-    //             // Flush the output stream to ensure all data is sent
-    //             outputStream.flush();
-    //             // Close the output stream
-    //             outputStream.close();
-    //         } 
-    //         else {
-    //             byte messageBytes = (byte)3; // Replace this with your message creation logic
-    //             //  Write the message to the output stream
-    //             outputStream.write(messageBytes);
-    //             // Flush the output stream to ensure all data is sent
-    //             outputStream.flush();
-    //             // Close the output stream
-    //             outputStream.close();
-    //         }
-    //     }
-    // } 
-    // catch (IOException e) {
-    //     e.printStackTrace();
-    // }
+//             // Prepare and send the appropriate message
+//             OutputStream outputStream = socket.getOutputStream();
+//             if (interested) {
+//                 byte messageBytes = (byte)2; // Replace this with your message creation logic
+//                 //  Write the message to the output stream
+//                 outputStream.write(messageBytes);
+//                 // Flush the output stream to ensure all data is sent
+//                 outputStream.flush();
+//                 // Close the output stream
+//                 outputStream.close();
+//             } 
+//             else {
+//                 byte messageBytes = (byte)3; // Replace this with your message creation logic
+//                 //  Write the message to the output stream
+//                 outputStream.write(messageBytes);
+//                 // Flush the output stream to ensure all data is sent
+//                 outputStream.flush();
+//                 // Close the output stream
+//                 outputStream.close();
+//             }
+//         }
+//     } 
+//     catch (IOException e) {
+//         e.printStackTrace();
+//     }
 // }
 
 }

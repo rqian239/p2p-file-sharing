@@ -22,10 +22,10 @@ public class Peer {
 
         if(hasFile) {
             // Set all bits to 1
-            bitmap.set(0, numPieces);
+            bitmap.set(0, numPieces, true);
         } else {
             // Set all bits to 0
-            bitmap.clear();
+            bitmap.set(0, numPieces, false);
         }
     }
 

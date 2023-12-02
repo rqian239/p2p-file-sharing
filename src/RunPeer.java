@@ -52,7 +52,7 @@ public class RunPeer {
         System.out.println("----------------------------------------------------------------");
 
         // Create server object to start listening to connections
-        server = new Server(thisPeer.getPort(), thisPeer.getPeerID());
+        server = new Server(thisPeer.getPort(), thisPeer.getPeerID(), allPeers.get(thisPeer.getPeerID()), pieceSize);
     }
 
     public void run() {
@@ -69,7 +69,7 @@ public class RunPeer {
                     Client newClient = new Client(thisPeerID);
                     allClients.put(connectToThisID, newClient);
                     newClient.connect(allPeers.get(connectToThisID));
-                    newClient.listenForIncomingMessages();
+                    newClient.listenForIncomingMessages(allPeers.get(thisPeerID), pieceSize);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -147,23 +147,23 @@ public class RunPeer {
         return currentTime.format(formatter);
     }
 
-    private static void sendBitfield(Socket socket, Peer peer) {
-        try {
-            // Convert the BitSet to a byte array
-            byte[] bitfieldBytes = peer.getBitmap().toByteArray();
+    // private static void sendBitfield(Socket socket, Peer peer) {
+    //     try {
+    //         // Convert the BitSet to a byte array
+    //         byte[] bitfieldBytes = peer.getBitmap().toByteArray();
 
-            // Prepare the message
-            messages.Message bitfieldMessage = new messages.Message((byte) 5, bitfieldBytes);
-            byte[] messageBytes = bitfieldMessage.createMessageBytes();
+    //         // Prepare the message
+    //         messages.Message bitfieldMessage = new messages.Message((byte) 5, bitfieldBytes);
+    //         byte[] messageBytes = bitfieldMessage.createMessageBytes();
 
-            // Send the message
-            OutputStream outputStream = socket.getOutputStream();
-            outputStream.write(messageBytes);
-        } 
-        catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
+    //         // Send the message
+    //         OutputStream outputStream = socket.getOutputStream();
+    //         outputStream.write(messageBytes);
+    //     } 
+    //     catch (IOException e) {
+    //         e.printStackTrace();
+    //     }
+    // }
 
     private static void checkInterested(Peer peer, Map<Integer, AbstractMap.SimpleEntry<Peer, Socket>> peerMap){
         for(int i = 0; i < peer.getNumPieces(); i++){
@@ -231,9 +231,40 @@ public class RunPeer {
                     outputStream.close();
                 }
             }
-        } 
+        }
         catch (IOException e) {
             e.printStackTrace();
         }
+
     }
+
+    public void readMessage(){
+
+    }
+
+
+    // public int sendPiece(String fName, int index, Socket socket){
+    //     try{
+    //         BufferedOutputStream bos = new BufferedOutputStream(socket.getOutputStream());
+    //         FileInputStream fis = new FileInputStream(fName);
+    //         byte[] fileBytes = new byte[pieceSize];
+    //         BufferedInputStream bis = new BufferedInputStream(fis);
+    //         int n=-1;
+    //         bis.read(fileBytes,index*pieceSize,pieceSize);
+    //         while((n = )>-1){
+    //             bos.write(fileBytes, index, n);
+    //             bos.flush();
+    //         }
+
+    //     }
+    //     catch(IOException e){
+    //         e.printStackTrace();
+    //     }
+    //     return 0;
+    // }
+    
+    //FileOutputStream(File file, boolean true)
+
+
+
 }
