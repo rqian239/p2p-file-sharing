@@ -14,6 +14,10 @@ public class ConnectionHandler implements Runnable {
     Client client = null;
 
     boolean handshakeReceived = false;
+
+    boolean sentBitfield = false;
+
+    BitSet otherPeerBitfield = null;
     
 
     public ConnectionHandler(Socket socket, int thisPeerID) {
@@ -29,40 +33,74 @@ public class ConnectionHandler implements Runnable {
 
         // Expect to receive handshake
         try {
-            if(!handshakeReceived) {
 
-                receiveHandshake();
-                if(client == null) {
-                    createClient();
-                }
+            // TODO: Add a infinite while loop?
+            while(true) {
 
-                // If we receive a handshake from a peer with a lower ID
-                if(connectedPeerID < thisPeerID) {
-                    // TODO: return a bitfield
+                if (!handshakeReceived) {
+                    receiveHandshake();
+                    if (client == null) {
+                        createClient();
+                    }
+
+                    // If we receive a handshake from a peer with a lower ID
+                    if (connectedPeerID < thisPeerID) {
+                        sendBitfield(socket, thisPeer);
+                        sentBitfield = true;
+                    } else {
+                        returnHandshake();
+                    }
+//                sendBitfield(socket, thisPeer);
+
+//                boolean interest = checkReceivedBitfield(socket, thisPeer);
+//                if(!interest){
+////                    for(int i = 0; i < thisPeer.getNumPieces(); i++){
+////                        sendPiece(socket, i, "tree.jpg", pieceSize);
+////                    }
+//                    // TODO: REMOVE LATER, for now send the entire file
+//                    System.out.println("Beginning to send entire image file...");
+//                    sendEntireFile();
+//                }
+//                else{
+////                    for(int i = 0; i < thisPeer.getNumPieces(); i++){
+////                        receivePiece(socket, 1, "tree1.jpg", pieceSize);
+////                    }
+//                    readEntireFile();
+//                }
+
                 } else {
-                    returnHandshake();
-                }
-                sendBitfield(socket, thisPeer);
-                boolean interest = checkReceivedBitfield(socket, thisPeer);
-                if(!interest){
-//                    for(int i = 0; i < thisPeer.getNumPieces(); i++){
-//                        sendPiece(socket, i, "tree.jpg", pieceSize);
-//                    }
-                    // TODO: REMOVE LATER, for now send the entire file
-                    System.out.println("Beginning to send entire image file...");
-                    sendEntireFile();
-                }
-                else{
-//                    for(int i = 0; i < thisPeer.getNumPieces(); i++){
-//                        receivePiece(socket, 1, "tree1.jpg", pieceSize);
-//                    }
-                    readEntireFile();
-                }
 
-            } else {
+                    // TODO: Read other messages
+                    System.out.println("Expecting a message...");
+                    DataInputStream readMessage = readMessage();
+                    // Read the message length (first four bytes)
+                    int messageLength = readMessage.readInt();
+                    // Read the message type
+                    byte messageType = readMessage.readByte();
 
-                // TODO: Read other messages
+                    // TODO: Switch statement for message type
+                    switch (messageType) {
+                        case Constants.BITFIELD:
 
+                            // Parse the bitfield
+                            // Read the bitfield bytes
+                            byte[] receivedBitfield = new byte[messageLength - 1]; // 1 byte for message type
+                            readMessage.readFully(receivedBitfield);
+
+                            otherPeerBitfield = BitSet.valueOf(receivedBitfield);
+
+                            System.out.println("Received a bitfield from peer [" + connectedPeerID + "] ----- Other Bitmap:" + otherPeerBitfield.get(1)); //TODO: what is getBitmap().get(1)?
+
+
+                            // Return a bitfield if we haven't one yet
+                            if (!sentBitfield) {
+                                sendBitfield(socket, thisPeer);
+                                sentBitfield = true;
+                            }
+                            break;
+                    }
+
+                }
             }
 
         } 
@@ -72,6 +110,10 @@ public class ConnectionHandler implements Runnable {
 
         System.out.println("ConnectionHandler exiting...");
 
+    }
+
+    private DataInputStream readMessage() throws IOException {
+        return new DataInputStream(socket.getInputStream());
     }
 
     private void readEntireFile() throws IOException {
@@ -174,11 +216,11 @@ public class ConnectionHandler implements Runnable {
                 byte[] receivedBitfield = new byte[messageLength - 1]; // 1 byte for message type
                 in.readFully(receivedBitfield);
 
-                BitSet receivedBitSet = BitSet.valueOf(receivedBitfield);
+                otherPeerBitfield = BitSet.valueOf(receivedBitfield);
 
                 boolean interested = false;
-                for (int i = 0; i < receivedBitSet.length(); i++) {
-                    if (receivedBitSet.get(i) && !peer.getBitmap().get(i)) {
+                for (int i = 0; i < otherPeerBitfield.length(); i++) {
+                    if (otherPeerBitfield.get(i) && !peer.getBitmap().get(i)) {
                         interested = true;
                         break;
                     }
