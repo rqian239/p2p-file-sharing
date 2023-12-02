@@ -73,17 +73,19 @@ public class Logger {
         return logMessage;
     }
 
-    public String logPieceDownloadedFrom(int peerID1, int peerID2, int pieceIndex, int totNumPieces){
+    public static String logPieceDownloadedFrom(int peerID1, int peerID2, int pieceIndex, int totNumPieces){
         String logMessage = "[" + getCurrentTime() + "]: Peer " + peerID1 + " has downloaded the piece " + pieceIndex + 
         " from "+ peerID2 + ". Now the number of pieces it has is " + totNumPieces + ".";
         return logMessage;
 
     }
 
-    public String logFileDownloaded(int peerID1){
+    public static String logFileDownloaded(int peerID1){
         String logMessage = "[" + getCurrentTime() + "]: Peer " + currpeerID + " has downloaded the complete file.";
         return logMessage;
     }
+
+
 
 
 

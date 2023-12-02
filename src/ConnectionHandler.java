@@ -39,7 +39,6 @@ public class ConnectionHandler implements Runnable {
 
             // TODO: Add a infinite while loop?
             while(true) {
-
                 if (!handshakeReceived) {
                     receiveHandshake();
                     if (client == null) {
@@ -106,10 +105,28 @@ public class ConnectionHandler implements Runnable {
 
                         case Constants.INTERESTED:
                             System.out.println(Logger.logReceiveInterested(thisPeerID, connectedPeerID));
+                            //TODO: receive file - should go to piece (interested returns index interested in)
+                            for(int i = 0; i < thisPeer.getNumPieces(); i++){
+                                receivePiece(socket, i, "tree1.jpg", pieceSize);
+                            }
                             break;
 
                         case Constants.NOT_INTERESTED:
                             System.out.println(Logger.logReceiveNotInterested(thisPeerID, connectedPeerID));
+                            //TODO: send file - should go to request (only sends piece requested)
+                            for(int i = 0; i < thisPeer.getNumPieces(); i++){
+                                sendPiece(socket, i, "tree.jpg", pieceSize);
+                            }
+                            break;
+                        case Constants.HAVE:
+                            //
+                            break;
+                        case Constants.REQUEST:
+                            //
+                            break;
+
+                        case Constants.PIECE:
+                            //
                             break;
                     }
 
@@ -141,7 +158,7 @@ public class ConnectionHandler implements Runnable {
         }
 
         System.out.println("File received");
-        fileOutputStream.close();
+        //fileOutputStream.close();
     }
 
     private void sendEntireFile() throws IOException {
@@ -155,8 +172,8 @@ public class ConnectionHandler implements Runnable {
         }
 
         System.out.println("Image sent");
-        fileInputStream.close();
-        out.close();
+        //fileInputStream.close();
+        //out.close();
     }
 
     public void returnHandshake() {
@@ -279,27 +296,32 @@ public class ConnectionHandler implements Runnable {
 
     public int sendPiece(Socket socket, int index, String fName, int pieceSize){
         try{
-            System.out.println("Sending piece to peer " + thisPeer.getPeerID()+" ---- //////");
-            
-            FileInputStream fis = new FileInputStream(fName);
-            BufferedInputStream bis = new BufferedInputStream(fis);
+            //System.out.println("Sending piece to peer " + thisPeer.getPeerID()+" ---- //////");
 
+            FileInputStream fis = new FileInputStream(fName);
+            //BufferedInputStream bis = new BufferedInputStream(fis);
+            fis.skip(index * pieceSize);
             byte[] fileBytes = new byte[pieceSize];
-            System.out.println("Available in buff input stream " + bis.available()+" ----"+ pieceSize+"_______________"+index*pieceSize+" -------- - - -");
-            if(pieceSize >= (bis.available()-(index*pieceSize))){
-                System.out.println("Sent bytes: " + bis.read(fileBytes, 0, (bis.available()-(index*pieceSize))));
-            }
-            else{
-                bis.read(fileBytes, 0, pieceSize);
-            }
+            //System.out.println("Available in buff input stream " + fis.available()+" ----"+ index+"_______________"+index*pieceSize+" -------- - - -");
+            int bytesRead = fis.read(fileBytes, 0,pieceSize);
+
+            //System.out.println("Read bytes: " + bytesRead);
+
+            byte[] indexBytes = ByteBuffer.allocate(4).putInt(index).array();
+
+            // Combine indexBytes and fileBytes into a single byte array
+            byte[] payloadBytes = new byte[4 + bytesRead];
+            System.arraycopy(indexBytes, 0, payloadBytes, 0, 4);
+            System.arraycopy(fileBytes, 0, payloadBytes, 4, bytesRead);
 
             // Prepare the message
-            messages.Message pieceMessage = new messages.Message((byte) 7, fileBytes);
+            messages.Message pieceMessage = new messages.Message((byte) 7, payloadBytes);
             byte[] messageBytes = pieceMessage.createMessageBytes();
 
             // Send the message
             OutputStream outputStream = socket.getOutputStream();
             outputStream.write(messageBytes);
+            outputStream.flush();
 
         }
         catch(IOException e){
@@ -310,25 +332,36 @@ public class ConnectionHandler implements Runnable {
     
     public int receivePiece(Socket socket, int index, String fName, int pieceSize){
         try{
-            System.out.println("Receiving piece to peer " + thisPeer.getPeerID()+" ---- //////");
+            //System.out.println("Receiving piece to peer " + thisPeer.getPeerID()+" ---- //////");
             
             DataInputStream in = new DataInputStream(socket.getInputStream());
+            int messageLength = in.readInt();
+            // Read the message type
+            byte messageType = in.readByte();
+            int indexT = in.readInt();
 
             // File newfile = new File(fName);
             FileOutputStream fos = new FileOutputStream(fName, true);
             
+            // byte[] indexBytes = new byte[4];
+            // in.read(indexBytes);
+            // int indexT = ByteBuffer.wrap(indexBytes).getInt();
+
+            //System.out.println("Piece Index Received: " + indexT);
+
             byte[] fileBytes = new byte[pieceSize];
-            in.read(fileBytes);
-            System.out.println("Available in buff input stream " + in.available()+" ----"+ pieceSize+"_______________"+index*pieceSize+" -------- - - -");
-            if(fileBytes.length >= in.available()){
-                System.out.println("Received bytes: " + in.available());
-                fos.write(fileBytes, 0, in.available());
-            }
-            else{
-                System.out.println("Received bytes: " + fileBytes.length);
-                fos.write(fileBytes, 0, pieceSize);
-            }
+            //System.out.println("In bytes " + in.available()+" ---- Message Length:"+messageLength +"  ----  Message Type: "+ messageType);
+            int bytesRead = in.read(fileBytes);
+            //System.out.println("Received bytes: " + bytesRead);
+            fos.write(fileBytes, 0, bytesRead);
+
+            RunPeer.allPeers.get(connectedPeerID).getBitmap().set(index);
+            System.out.println(Logger.logPieceDownloadedFrom(connectedPeerID, thisPeerID, index, RunPeer.allPeers.get(connectedPeerID).getBitmap().cardinality()));
+            fos.flush();
             fos.close();
+            if(RunPeer.allPeers.get(thisPeerID).getNumPieces() == (index+1)){
+                System.out.println(Logger.logFileDownloaded(thisPeerID));
+            }
         }
         catch(IOException e){
             e.printStackTrace();
