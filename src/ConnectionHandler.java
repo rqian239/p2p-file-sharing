@@ -3,6 +3,7 @@ import java.io.BufferedOutputStream;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -87,7 +88,14 @@ public class ConnectionHandler implements Runnable {
                 sendBitfield(socket, peer);
                 boolean interest = checkReceivedBitfield(socket, peer);
                 if(!interest){
-                    sendPiece(socket, 1, "tree.jpg", pieceSize);
+                    for(int i = 0; i < peer.getNumPieces(); i++){
+                        sendPiece(socket, i, "tree.jpg", pieceSize);
+                    }
+                }
+                else{
+                    for(int i = 0; i < peer.getNumPieces(); i++){
+                        receivePiece(socket, 1, "tree1.jpg", pieceSize);
+                    }
                 }
 
             } else {
@@ -148,7 +156,7 @@ public class ConnectionHandler implements Runnable {
     private static void sendBitfield(Socket socket, Peer peer) {
         try {
             // Convert the BitSet to a byte array
-            System.out.println("Sending bitfield to peer " + peer.getPeerID()+" ----- Bitmap:"+peer.getBitmap().get(1));
+            System.out.println("Sending bitfield to peer " + peer.getPeerID() + " ----- Bitmap:"+peer.getBitmap().get(1));
             byte[] bitfieldBytes = peer.getBitmap().toByteArray();
 
             // Prepare the message
@@ -226,11 +234,10 @@ public class ConnectionHandler implements Runnable {
 
             byte[] fileBytes = new byte[pieceSize];
             System.out.println("Available in buff input stream " + bis.available()+" ----"+ pieceSize+"_______________"+index*pieceSize+" -------- - - -");
-            if(pieceSize >= bis.available()){
-                bis.read(fileBytes, 0, bis.available());
+            if(pieceSize >= (bis.available()-(index*pieceSize))){
+                System.out.println("Sent bytes: " + bis.read(fileBytes, 0, (bis.available()-(index*pieceSize))));
             }
             else{
-
                 bis.read(fileBytes, 0, pieceSize);
             }
 
@@ -255,10 +262,24 @@ public class ConnectionHandler implements Runnable {
             
             DataInputStream in = new DataInputStream(socket.getInputStream());
 
-            File newfile = new File(fName);
-            FileWriter fw = new FileWriter(newfile, true);
+            // File newfile = new File(fName);
+            FileOutputStream fos = new FileOutputStream(fName, true);
             
             byte[] fileBytes = new byte[pieceSize];
+            in.read(fileBytes);
+            System.out.println("Available in buff input stream " + in.available()+" ----"+ pieceSize+"_______________"+index*pieceSize+" -------- - - -");
+            if(fileBytes.length >= in.available()){
+                System.out.println("Received bytes: " + in.available());
+                fos.write(fileBytes, 0, in.available());
+            }
+            else{
+                System.out.println("Received bytes: " + fileBytes.length);
+                fos.write(fileBytes, 0, pieceSize);
+            }
+            fos.close();
+
+
+
         //     System.out.println("Available in buff input stream " + bis.available()+" ----"+ pieceSize+"_______________"+index*pieceSize+" -------- - - -");
         //     if(pieceSize >= bis.available()){
         //         bis.read(fileBytes, 0, bis.available());
@@ -276,7 +297,6 @@ public class ConnectionHandler implements Runnable {
         //     OutputStream outputStream = socket.getOutputStream();
         //     outputStream.write(messageBytes);
 
-        // }
         }
         catch(IOException e){
             e.printStackTrace();
