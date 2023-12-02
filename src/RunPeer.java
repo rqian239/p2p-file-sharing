@@ -13,12 +13,12 @@ import java.util.Scanner;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class RunPeer {
-    int numberOfPreferredNeighbors;
-    int unchokingInterval;
-    int optimisticUnchokingInterval;
-    String dataFilename;
-    int fileSize;
-    int pieceSize;
+    static int numberOfPreferredNeighbors;
+    static int unchokingInterval;
+    static int optimisticUnchokingInterval;
+    static String dataFilename;
+    static int fileSize;
+    static int pieceSize;
     final Peer thisPeer;
     Server server;
     static ConcurrentHashMap<Integer, Peer> allPeers;
