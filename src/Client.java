@@ -46,4 +46,9 @@ public class Client {
         listenThread.start();
     }
 
+    public void sendMessage(Socket socket, byte[] messageBytes) throws IOException {
+        OutputStream outputStream = socket.getOutputStream();
+        outputStream.write(messageBytes);
+    }
+
 }

@@ -63,13 +63,13 @@ public class Logger {
         return logMessage;
     }
 
-    public String logReceiveInterested(int peerID1, int peerID2){
-        String logMessage = "[" + getCurrentTime() + "]: Peer " + peerID1 + " received the ‘interested’ message from " + peerID2;
+    public static String logReceiveInterested(int recipientPeer, int senderPeer){
+        String logMessage = "[" + getCurrentTime() + "]: Peer " + recipientPeer + " received the ‘interested’ message from " + senderPeer;
         return logMessage;
     }
 
-    public String logReceiveNotInterested(int peerID1, int peerID2){
-        String logMessage = "[" + getCurrentTime() + "]: Peer " + peerID1 + " received the ‘not interested’ message from " + peerID2;
+    public static String logReceiveNotInterested(int recipientPeer, int senderPeer){
+        String logMessage = "[" + getCurrentTime() + "]: Peer " + recipientPeer + " received the ‘not interested’ message from " + senderPeer;
         return logMessage;
     }
 

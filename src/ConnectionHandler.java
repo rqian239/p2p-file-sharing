@@ -1,3 +1,6 @@
+import com.sun.org.apache.bcel.internal.Const;
+import messages.Message;
+
 import java.io.*;
 import java.net.Socket;
 import java.nio.ByteBuffer;
@@ -91,12 +94,22 @@ public class ConnectionHandler implements Runnable {
 
                             System.out.println("Received a bitfield from peer [" + connectedPeerID + "] ----- Other Bitmap:" + otherPeerBitfield.get(1)); //TODO: what is getBitmap().get(1)?
 
-
                             // Return a bitfield if we haven't one yet
                             if (!sentBitfield) {
                                 sendBitfield(socket, thisPeer);
                                 sentBitfield = true;
                             }
+
+                            // TODO: Send interested/uninterested message
+                            sendInterested(checkInterested());  // send interested/uninterested message based on checkInterested();
+                            break;
+
+                        case Constants.INTERESTED:
+                            System.out.println(Logger.logReceiveInterested(thisPeerID, connectedPeerID));
+                            break;
+
+                        case Constants.NOT_INTERESTED:
+                            System.out.println(Logger.logReceiveNotInterested(thisPeerID, connectedPeerID));
                             break;
                     }
 
@@ -193,12 +206,22 @@ public class ConnectionHandler implements Runnable {
             byte[] messageBytes = bitfieldMessage.createMessageBytes();
 
             // Send the message
-            OutputStream outputStream = socket.getOutputStream();
-            outputStream.write(messageBytes);
+            client.sendMessage(socket, messageBytes);
         } 
         catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private void sendInterested(boolean isInterested) throws IOException {
+        // Create message
+
+        byte messageType = isInterested ? Constants.INTERESTED : Constants.NOT_INTERESTED;
+
+        Message message = new Message(messageType);
+        byte[] messageBytes = message.createMessageBytes();
+
+        client.sendMessage(socket, messageBytes);
     }
 
     private boolean checkReceivedBitfield(Socket socket, Peer peer) {
@@ -218,35 +241,39 @@ public class ConnectionHandler implements Runnable {
 
                 otherPeerBitfield = BitSet.valueOf(receivedBitfield);
 
-                boolean interested = false;
-                for (int i = 0; i < otherPeerBitfield.length(); i++) {
-                    if (otherPeerBitfield.get(i) && !peer.getBitmap().get(i)) {
-                        interested = true;
-                        break;
-                    }
-                }
-                // Prepare and send the appropriate message
-                OutputStream outputStream = socket.getOutputStream();
-                if (interested) {
-                    System.out.println("Sending interested message from peer " + peer.getPeerID());
-//                    byte messageBytes = (byte)2; // TODO: Replace this with your message creation logic
-//                    //  Write the message to the output stream
-//                    outputStream.write(messageBytes);
-//                    // Flush the output stream to ensure all data is sent
-//                    outputStream.flush();
-//                    // Close the output stream
-                    return true;
-                } 
-                else {
-                    System.out.println("Sending not interested message from peer [" + thisPeerID + "] to [" + connectedPeerID + "].");
-                    // TODO: Send a not interested message
-                    return false;
-                }
+
+//                // Prepare and send the appropriate message
+//                OutputStream outputStream = socket.getOutputStream();
+//                if (interested) {
+//                    System.out.println("Sending interested message from peer " + peer.getPeerID());
+////                    byte messageBytes = (byte)2; // TODO: Replace this with your message creation logic
+////                    //  Write the message to the output stream
+////                    outputStream.write(messageBytes);
+////                    // Flush the output stream to ensure all data is sent
+////                    outputStream.flush();
+////                    // Close the output stream
+//                    return true;
+//                }
+//                else {
+//                    System.out.println("Sending not interested message from peer [" + thisPeerID + "] to [" + connectedPeerID + "].");
+//                    // TODO: Send a not interested message
+//                    return false;
+//                }
             }
         } 
         catch (IOException e) {
             e.printStackTrace();
         }
+        return false;
+    }
+
+    private boolean checkInterested() {
+        for (int i = 0; i < otherPeerBitfield.length(); i++) {
+            if (otherPeerBitfield.get(i) && !thisPeer.getBitmap().get(i)) {
+                return true;
+            }
+        }
+
         return false;
     }
 
