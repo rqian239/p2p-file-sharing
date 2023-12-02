@@ -1,10 +1,7 @@
 import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.DataInputStream;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.Socket;
@@ -16,7 +13,7 @@ public class ConnectionHandler implements Runnable {
     Socket socket;
     int connectedPeerID;
     int thisPeerID;
-    Peer peer;
+    Peer thisPeer;
     int pieceSize;
 
     Client client = null;
@@ -26,11 +23,11 @@ public class ConnectionHandler implements Runnable {
     private int currentConnectionState;
     
 
-    public ConnectionHandler(Socket socket, int thisPeerID, Peer peer, int pieceSize) {
+    public ConnectionHandler(Socket socket, int thisPeerID) {
         this.socket = socket;
         this.thisPeerID = thisPeerID;
-        this.peer = peer;
-        this.pieceSize = pieceSize;
+        this.thisPeer = RunPeer.allPeers.get(thisPeerID);
+        this.pieceSize = RunPeer.pieceSize;
     }
 
     @Override
@@ -85,15 +82,15 @@ public class ConnectionHandler implements Runnable {
                 } else {
                     returnHandshake();
                 }
-                sendBitfield(socket, peer);
-                boolean interest = checkReceivedBitfield(socket, peer);
+                sendBitfield(socket, thisPeer);
+                boolean interest = checkReceivedBitfield(socket, thisPeer);
                 if(!interest){
-                    for(int i = 0; i < peer.getNumPieces(); i++){
+                    for(int i = 0; i < thisPeer.getNumPieces(); i++){
                         sendPiece(socket, i, "tree.jpg", pieceSize);
                     }
                 }
                 else{
-                    for(int i = 0; i < peer.getNumPieces(); i++){
+                    for(int i = 0; i < thisPeer.getNumPieces(); i++){
                         receivePiece(socket, 1, "tree1.jpg", pieceSize);
                     }
                 }
@@ -227,7 +224,7 @@ public class ConnectionHandler implements Runnable {
 
     public int sendPiece(Socket socket, int index, String fName, int pieceSize){
         try{
-            System.out.println("Sending piece to peer " + peer.getPeerID()+" ---- //////");
+            System.out.println("Sending piece to peer " + thisPeer.getPeerID()+" ---- //////");
             
             FileInputStream fis = new FileInputStream(fName);
             BufferedInputStream bis = new BufferedInputStream(fis);
@@ -258,7 +255,7 @@ public class ConnectionHandler implements Runnable {
     
     public int receivePiece(Socket socket, int index, String fName, int pieceSize){
         try{
-            System.out.println("Receiving piece to peer " + peer.getPeerID()+" ---- //////");
+            System.out.println("Receiving piece to peer " + thisPeer.getPeerID()+" ---- //////");
             
             DataInputStream in = new DataInputStream(socket.getInputStream());
 

@@ -52,7 +52,7 @@ public class RunPeer {
         System.out.println("----------------------------------------------------------------");
 
         // Create server object to start listening to connections
-        server = new Server(thisPeer.getPort(), thisPeer.getPeerID(), allPeers.get(thisPeer.getPeerID()), pieceSize);
+        server = new Server(thisPeer.getPort(), thisPeer.getPeerID());
     }
 
     public void run() {
@@ -69,7 +69,7 @@ public class RunPeer {
                     Client newClient = new Client(thisPeerID);
                     allClients.put(connectToThisID, newClient);
                     newClient.connect(allPeers.get(connectToThisID));
-                    newClient.listenForIncomingMessages(allPeers.get(thisPeerID), pieceSize);
+                    newClient.listenForIncomingMessages();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
