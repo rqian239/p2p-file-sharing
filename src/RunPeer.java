@@ -154,21 +154,35 @@ public class RunPeer {
 
     public static synchronized int getRandomPieceIndex() {
 
-        Iterator<Integer> iterator = piecesWeDontHave.keySet().iterator();
-        // TODO: Make this actually random?
-        if(iterator.hasNext()){
+//        Iterator<Integer> iterator = piecesWeDontHave.keySet().iterator();
+//
+//        if(iterator.hasNext()){
+//            try {
+//                int index = iterator.next();
+//                piecesWeDontHave.remove(index);
+//                return index;
+//            } catch (NoSuchElementException e) {
+//                // We run out of pieces we don't have
+//                return -1;
+//            }
+//        } else {
+//            // RETURN -1 IF WE GOT ALL THE PIECES
+//            return -1;
+//        }
+
+        Set<Integer> setOfMissingPieces = piecesWeDontHave.keySet();
+
+        while(!piecesWeDontHave.isEmpty()){
             try {
-                int index = iterator.next();
+                int index = selectRandomIndexFromSet(setOfMissingPieces);
                 piecesWeDontHave.remove(index);
                 return index;
             } catch (NoSuchElementException e) {
-                // We run out of pieces we don't have
-                return -1;
+                // Pick a different index
             }
-        } else {
-            // RETURN -1 IF WE GOT ALL THE PIECES
-            return -1;
         }
+
+        return -1;
 
     }
 
@@ -182,6 +196,21 @@ public class RunPeer {
 
     public static synchronized BitSet getBitmap(int peerID) {
         return allBitmaps.get(peerID);
+    }
+
+    public static int selectRandomIndexFromSet(Set<Integer> set) {
+        int size = set.size();
+        int item = new Random().nextInt(size); // In real life, the Random object should be rather more shared than this
+        int i = 0;
+        for(Integer index : set)
+        {
+            if (i == item) {
+                return index;
+            }
+            i++;
+        }
+
+        return -1;
     }
 
 }
