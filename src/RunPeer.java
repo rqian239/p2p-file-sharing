@@ -19,6 +19,11 @@ public class RunPeer {
     // Threads
     Thread serverThread;
 
+    static ArrayList<Integer> preffNeighbors;
+    public static ConcurrentHashMap<Integer, Boolean> chokedNeighbors = new ConcurrentHashMap<>();
+    static int optimisticPeerNeighbor;
+    static ConcurrentHashMap<Integer, Integer> receivedPiecesMap = new ConcurrentHashMap<>();
+
     //TODO: Thread-safe set for requesting next piece
     static ConcurrentHashMap<Integer, Byte> piecesWeDontHave; // the key is the piece index, the byte has no meaning (I wanted a thread-safe set but Java only has ConcurrentHashMap)
 
@@ -60,6 +65,11 @@ public class RunPeer {
 
         // Create server object to start listening to connections
         server = new Server(thisPeer.getPort(), thisPeer.getPeerID());
+
+        preffNeighbors = new ArrayList<>(numberOfPreferredNeighbors);
+        for (int i : allConnections.keySet()) {
+            chokedNeighbors.put(i, true);
+        }
     }
 
     public void run() {
