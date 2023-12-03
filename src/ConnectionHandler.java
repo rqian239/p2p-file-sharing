@@ -4,6 +4,7 @@ import java.io.*;
 import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class ConnectionHandler implements Runnable {
 
@@ -22,10 +23,11 @@ public class ConnectionHandler implements Runnable {
     double downloadRate = 0;
     Random random = new Random();
 
+    static ConcurrentHashMap<Integer, Long > indexTime = new ConcurrentHashMap<>();
+
     //count of received pieces for each peer, for downloading rate
     // Map to store the downloading rates for each peer
-    Map<Integer, Double> downloadingRatesMap = new LinkedHashMap<>();; //downloading rate for each peer
-    private long lastUpdateTime = System.currentTimeMillis();
+    private long lastUpdateTime = System.nanoTime();
 
     boolean handshakeReceived = false;
 
@@ -42,12 +44,16 @@ public class ConnectionHandler implements Runnable {
         this.pieceSize = RunPeer.pieceSize;
         interestedPieces = new BitSet(thisPeer.getNumPieces());
 
+        Logger = new Logger(thisPeerID);
         downloadRate = 0;
         this.timer = new Timer();
         this.optimisticTimer = new Timer();
-        startNeighborSelectionTimer();
-        startOptNeighborSelectionTimer();
-        Logger = new Logger(thisPeerID);
+        if(!RunPeer.runningTimer) {
+            RunPeer.runningTimer = true;
+            startNeighborSelectionTimer();
+            startOptNeighborSelectionTimer();
+        }
+
     }
 
     @Override
@@ -97,6 +103,10 @@ public class ConnectionHandler implements Runnable {
 
                         case Constants.UNCHOKE:
                             choked = false;
+                            int unChokeReq = RunPeer.getRandomPieceIndex();
+                            if (unChokeReq != -1) {
+                                sendRequestMessage(unChokeReq);
+                            }
                             System.out.println(Logger.logReceiveUnchoke(thisPeerID,connectedPeerID));
                             break;
                         case Constants.BITFIELD:
@@ -143,10 +153,18 @@ public class ConnectionHandler implements Runnable {
                         case Constants.NOT_INTERESTED:
                             System.out.println(Logger.logReceiveNotInterested(thisPeerID, connectedPeerID));
                             break;
+
                         case Constants.HAVE:
                             index = getIndexByte(receivedPayload);
 
+                            incrementSentPieces(connectedPeerID);
+
                             RunPeer.setBitsInBitMap(connectedPeerID, index, true);
+
+                           // if(RunPeer.preffNeighbors.size() >= RunPeer.numberOfPreferredNeighbors) {
+                            calculateDownloadingRates(index);
+                            //}
+
                             System.out.println(Logger.logReceiveHave(thisPeerID, connectedPeerID, index));
 
                             break;
@@ -155,6 +173,9 @@ public class ConnectionHandler implements Runnable {
                             //TODO: send the file to interested peer
                             index = getIndexByte(receivedPayload);
 
+                            //if(RunPeer.preffNeighbors.size() >= RunPeer.numberOfPreferredNeighbors){
+                            indexTime.put(index, System.nanoTime());
+                            //}
                             sendPiece(socket, index, RunPeer.hasFilePeerID + "/" + RunPeer.dataFilename, pieceSize);
 
                             break;
@@ -163,15 +184,17 @@ public class ConnectionHandler implements Runnable {
                             index = getIndexByte(receivedPayload);
                             // TODO: receive the piece here
                             processPiece(receivedPayload, thisPeerID + "/" + RunPeer.dataFilename);
-                            incrementReceivedPieces(connectedPeerID);
+
 
                             sendHaveMessage(index);
 
                             // Decide if we should continue
-                            int requestThisPiece = RunPeer.getRandomPieceIndex();
-                            if(requestThisPiece != -1){
-                                sendRequestMessage(requestThisPiece);
-                            }
+                            //if(RunPeer.chokedNeighbors.contains(connectedPeerID)) {
+                                int requestThisPiece = RunPeer.getRandomPieceIndex();
+                                if (requestThisPiece != -1) {
+                                    sendRequestMessage(requestThisPiece);
+                                }
+                            //}
                             break;
                         case Constants.TERMINATE:
 
@@ -376,44 +399,7 @@ public class ConnectionHandler implements Runnable {
         }
         return 0;
     }
-    
-//    public int processPiece(byte[] payload, String fName){
-//        try{
-//            index = getIndexByte(payload);
-//
-//            // File newfile = new File(fName);
-//            FileOutputStream fos = new FileOutputStream(fName, true);
-//
-//            // byte[] indexBytes = new byte[4];
-//            // in.read(indexBytes);
-//            // int indexT = ByteBuffer.wrap(indexBytes).getInt();
-//
-//            //System.out.println("Piece Index Received: " + indexT);
-//
-//            byte[] fileBytes = new byte[pieceSize];
-//            //System.out.println("In bytes " + in.available()+" ---- Message Length:"+messageLength +"  ----  Message Type: "+ messageType);
-//            int bytesRead = payload.length - 4;
-//
-//            System.arraycopy(payload, 4, fileBytes, 0, bytesRead);
-//
-//
-//            //System.out.println("Received bytes: " + bytesRead);
-//            fos.write(fileBytes, 0, bytesRead);
-//
-//            // Update this bitmap
-//            thisPeer.getBitmap().set(index);
-//            System.out.println(Logger.logPieceDownloadedFrom(thisPeerID, connectedPeerID, index, thisPeer.getBitmap().cardinality()));
-//            fos.flush();
-//            fos.close();
-//            if(thisPeer.getNumPieces() == (index+1)){
-//                System.out.println(Logger.logFileDownloaded(thisPeerID));
-//            }
-//        }
-//        catch(IOException e){
-//            e.printStackTrace();
-//        }
-//        return 0;
-//    }
+
     public int processPiece(byte[] payload, String fName) {
         try {
             int index = getIndexByte(payload);
@@ -442,11 +428,12 @@ public class ConnectionHandler implements Runnable {
 
             // If all pieces are downloaded, log the completion
             if (RunPeer.piecesWeDontHave.isEmpty()) {
-                System.out.println(Logger.logFileDownloaded(thisPeerID));
+
 
 
                 if(thisPeerID == RunPeer.lastPeerToConnect && thisPeer.getBitmap().cardinality() == RunPeer.numTotalPieces) {
                     // TODO: Send termination message to everyone
+                    System.out.println(Logger.logFileDownloaded(thisPeerID));
                     boolean terminationStatus = RunPeer.sendTerminationToAll();
                     if(terminationStatus) {
                         RunPeer.terminate();
@@ -477,59 +464,63 @@ public class ConnectionHandler implements Runnable {
     }
 
     public void selectNeighbors(boolean hasFile){
-        calculateDownloadingRates();
-        System.out.println("Downloading Rates:" + downloadingRatesMap);
-        List<Map.Entry<Integer, Double>> sortedConnections = new ArrayList<>(downloadingRatesMap.entrySet());
-        // Sort the connections based on downloadRate (assuming higher rates are worse)
-        //sortedConnections.sort(Comparator.comparingDouble(entry -> entry.getValue()).reversed());
-        sortedConnections.sort((o1, o2) -> Double.compare(o2.getValue(), o1.getValue()));
-        System.out.println("Sorted Connections Rates:" + sortedConnections);
-        RunPeer.preffNeighbors.clear();
+        //System.out.println("Downloading Rates:" + RunPeer.downloadingRatesMap);
+        if(RunPeer.downloadingRatesMap.size()>0) {
+            List<Map.Entry<Integer, Double>> sortedConnections = new ArrayList<>(RunPeer.downloadingRatesMap.entrySet());
+            // Sort the connections based on downloadRate (assuming higher rates are worse)
+            //sortedConnections.sort(Comparator.comparingDouble(entry -> entry.getValue()).reversed());
+            sortedConnections.sort((o1, o2) -> Double.compare(o2.getValue(), o1.getValue()));
+            //System.out.println("Sorted Connections Rates:" + sortedConnections);
+            RunPeer.preffNeighbors.clear();
 
-        if(!hasFile){
-            for (int i = 0; i < Math.min(RunPeer.numberOfPreferredNeighbors, sortedConnections.size()); i++) {
-                RunPeer.preffNeighbors.add(sortedConnections.get(i).getKey());
-            }
-            System.out.println(Logger.logChangePreferredNeighbors(thisPeerID, RunPeer.preffNeighbors.stream().mapToInt(Integer::intValue).toArray()));
-
-            //System.out.println("Top peerIDs with highest values: " + RunPeer.preffNeighbors+"  Pref Neigh Size:"+ RunPeer.numberOfPreferredNeighbors+" --- sortedConnect size: "+sortedConnections.size());
-        }
-        else{
-            System.out.println("Randomly selecting neighborPeers bc hasFile");
-            ArrayList<Integer> allPeerIDs = new ArrayList<>(RunPeer.allConnections.keySet());
-            // Shuffle the list of peer IDs
-            Collections.shuffle(allPeerIDs);
-            // Add numNeighbors random peers to preffNeighbors
-            for (int i = 0; i < Math.min(RunPeer.numberOfPreferredNeighbors, allPeerIDs.size()); i++) {
-                RunPeer.preffNeighbors.add(allPeerIDs.get(i));
-            }
-            //System.out.println("Top peerIDs with highest values---: " + RunPeer.preffNeighbors);
-            //sets neighbors's booleans to true or false depending if in preffNeighbors
-            System.out.println(Logger.logChangePreferredNeighbors(thisPeerID, RunPeer.preffNeighbors.stream().mapToInt(Integer::intValue).toArray()));
-            boolean choke = !choked;
-            for (Integer neighborPeerID : RunPeer.chokedNeighbors.keySet()) {
-                if (RunPeer.preffNeighbors.contains(neighborPeerID)) {
-                    RunPeer.chokedNeighbors.put(neighborPeerID, false);
-                    choke = false;
+            if (!hasFile) {
+                for (int i = 0; i < Math.min(RunPeer.numberOfPreferredNeighbors, sortedConnections.size()); i++) {
+                    RunPeer.preffNeighbors.add(sortedConnections.get(i).getKey());
                 }
-                else{
-                    RunPeer.chokedNeighbors.put(neighborPeerID, true);
-                    choke = true;
+                System.out.println(Logger.logChangePreferredNeighbors(thisPeerID, RunPeer.preffNeighbors.stream().mapToInt(Integer::intValue).toArray()));
+
+                //System.out.println("Top peerIDs with highest values: " + RunPeer.preffNeighbors+"  Pref Neigh Size:"+ RunPeer.numberOfPreferredNeighbors+" --- sortedConnect size: "+sortedConnections.size());
+            } else {
+                //System.out.println("Randomly selecting neighborPeers bc hasFile");
+                ArrayList<Integer> allPeerIDs = new ArrayList<>(RunPeer.allConnections.keySet());
+                // Shuffle the list of peer IDs
+                Collections.shuffle(allPeerIDs);
+                // Add numNeighbors random peers to preffNeighbors
+                for (int i = 0; i < Math.min(RunPeer.numberOfPreferredNeighbors, allPeerIDs.size()); i++) {
+                    RunPeer.preffNeighbors.add(allPeerIDs.get(i));
                 }
-            }
-            if(choke == choked) {
-                choked = choke;
-                sendChokeOrUnchoke(choked);
-            }
+                int t = 0;
+                while (RunPeer.preffNeighbors.size() < RunPeer.numberOfPreferredNeighbors) {
+                    RunPeer.preffNeighbors.add(allPeerIDs.get(t));
+                    t++;
+                }
+                //System.out.println("Top peerIDs with highest values---: " + RunPeer.preffNeighbors);
+                //sets neighbors's booleans to true or false depending if in preffNeighbors
+                System.out.println(Logger.logChangePreferredNeighbors(thisPeerID, RunPeer.preffNeighbors.stream().mapToInt(Integer::intValue).toArray()));
+                boolean choke = !choked;
+                for (Integer neighborPeerID : RunPeer.chokedNeighbors.keySet()) {
+                    if (RunPeer.preffNeighbors.contains(neighborPeerID)) {
+                        RunPeer.chokedNeighbors.put(neighborPeerID, false);
+                        choke = false;
+                    } else {
+                        RunPeer.chokedNeighbors.put(neighborPeerID, true);
+                        choke = true;
+                    }
+                }
+                if (choke == choked) {
+                    choked = choke;
+                    sendChokeOrUnchoke(choked);
+                }
 
+            }
         }
-
     }
 
     public void selectOptNeighbor(){
         ArrayList<Integer> allPeerIDs = new ArrayList<>(RunPeer.allConnections.keySet());
         // Shuffle the list to randomize the selection
         Collections.shuffle(allPeerIDs);
+        int tOPT = RunPeer.optimisticPeerNeighbor;
         for (Integer optpeerID : allPeerIDs) {
             // Check if the peerID is not in preffNeighbors already
             if (!RunPeer.preffNeighbors.contains(optpeerID)) {
@@ -539,10 +530,11 @@ public class ConnectionHandler implements Runnable {
             }
         }
         //System.out.println("OptimisticPeerNeighbor: " + RunPeer.optimisticPeerNeighbor);
-        System.out.println(Logger.logChangeOptUnchokeNeighbor(thisPeerID, RunPeer.optimisticPeerNeighbor));
-
+        if(RunPeer.optimisticPeerNeighbor!=tOPT) {
+            System.out.println(Logger.logChangeOptUnchokeNeighbor(thisPeerID, RunPeer.optimisticPeerNeighbor));
+        }
     }
-    public void startNeighborSelectionTimer() {
+    public synchronized void startNeighborSelectionTimer() {
         timer.schedule(new TimerTask() {
             @Override
             public void run() {
@@ -554,45 +546,46 @@ public class ConnectionHandler implements Runnable {
                 }
 //                System.out.println("Timer task executed");
             }
-        }, RunPeer.unchokingInterval * 1000); // convert seconds to milliseconds
+        }, RunPeer.unchokingInterval * 1000, RunPeer.unchokingInterval * 1000); // convert seconds to milliseconds
     }
-    public void startOptNeighborSelectionTimer() {
+    public synchronized void startOptNeighborSelectionTimer() {
         optimisticTimer.schedule(new TimerTask() {
             @Override
             public void run() {
-                selectOptNeighbor();
+                    selectOptNeighbor();
 //                System.out.println("Optimistic Timer task executed");
             }
-        }, RunPeer.optimisticUnchokingInterval * 1000); // convert seconds to milliseconds
+        }, RunPeer.unchokingInterval * 1000,RunPeer.optimisticUnchokingInterval * 1000); // convert seconds to milliseconds
     }
     // cancel the timer and the scheduled tasks
     public static void stopNeighborSelectionTimer() {
         timer.cancel();
         optimisticTimer.cancel();
     }
-    public void incrementReceivedPieces(int peerID) {
-        RunPeer.receivedPiecesMap.put(peerID, RunPeer.receivedPiecesMap.getOrDefault(peerID, 0) + 1);
+    public void incrementSentPieces(int peerID) {
+        RunPeer.sentPiecesMap.put(peerID, RunPeer.sentPiecesMap.getOrDefault(peerID, 0) + 1);
     }
 
     // received count / currTime - lastupdatedtime = downloading rate
     //storing rate in map for each peerNeighbor
-    public void calculateDownloadingRates() {
-        long currentTime = System.currentTimeMillis();
-        long timeDifference = currentTime - lastUpdateTime;
-        double downloadR = random.nextDouble() * (300.0000 - 165.0000) + 165.0000;
-        if (timeDifference > 0) {
-            for (Map.Entry<Integer, Integer> entry : RunPeer.receivedPiecesMap.entrySet()) {
+    public void calculateDownloadingRates(int index) {
+        long currentTime = System.nanoTime();
+
+        //double downloadR = random.nextDouble() * (300.0000 - 165.0000) + 165.0000;
+        long timeDifference = currentTime - indexTime.get(index);
+        if(timeDifference>0){
+            for (Map.Entry<Integer, Integer> entry : RunPeer.sentPiecesMap.entrySet()) {
                 int peerID = entry.getKey();
                 int receivedCount = entry.getValue();
 
                 // calculate downloading rate
                 double downloadingRate = (double) receivedCount / (timeDifference / 1000.0); // Rate per second
                 //System.out.println("Calculate rates: " + peerID + " " + downloadingRate);
-                downloadingRatesMap.put(peerID, downloadingRate);
+                RunPeer.downloadingRatesMap.put(peerID, downloadingRate);
             }
         }
         // Reset received pieces map and update last update time
-        RunPeer.receivedPiecesMap.clear();
-        lastUpdateTime = currentTime;
+        RunPeer.sentPiecesMap.clear();
+        //lastUpdateTime = currentTime;
     }
 }

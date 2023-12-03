@@ -22,16 +22,19 @@ public class RunPeer {
     static int numTotalPieces;
     static int lastPeerToConnect = 0;
     Server server;
+
+    static boolean runningTimer = false;
     static ConcurrentHashMap<Integer, Peer> allPeers;
     static ConcurrentHashMap<Integer, ConnectionHandler> allConnections;
     static ConcurrentHashMap<Integer, BitSet> allBitmaps;
     // Threads
     Thread serverThread;
 
+    static ConcurrentHashMap<Integer,Double> downloadingRatesMap = new ConcurrentHashMap<>();
     static ArrayList<Integer> preffNeighbors;
     public static ConcurrentHashMap<Integer, Boolean> chokedNeighbors = new ConcurrentHashMap<>();
     static int optimisticPeerNeighbor;
-    static ConcurrentHashMap<Integer, Integer> receivedPiecesMap = new ConcurrentHashMap<>();
+    static ConcurrentHashMap<Integer, Integer> sentPiecesMap = new ConcurrentHashMap<>();
 
     //TODO: Thread-safe set for requesting next piece
     static ConcurrentHashMap<Integer, Byte> piecesWeDontHave; // the key is the piece index, the byte has no meaning (I wanted a thread-safe set but Java only has ConcurrentHashMap)
