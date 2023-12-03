@@ -22,4 +22,8 @@ public class Constants {
     public static final int HAVE_NOT_SENT_HANDSHAKE_AWAITING_HANDSHAKE = 1;
     public static final int SENT_BITFIELD_AWAITING_BITFIELD = 2;
     public static final int HAVE_NOT_SENT_BITFIELD_AWAITING_BITFIELD = 3;
+
+
+    // Terminate message
+    public static final byte TERMINATE = 8;
 }

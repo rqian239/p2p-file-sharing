@@ -57,4 +57,8 @@ public class Client {
     public ConnectionHandler getConnectionHandler() {
         return connectionHandler;
     }
+
+    public void setListenThread(Thread thread) {
+        this.listenThread = thread;
+    }
 }

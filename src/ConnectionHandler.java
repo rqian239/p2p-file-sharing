@@ -261,6 +261,7 @@ public class ConnectionHandler implements Runnable {
     public void createClient() {
         client = new Client(thisPeerID);
         client.setConnectionHandler(this);
+        client.setListenThread(Thread.currentThread());
     }
 
     public void setClient(Client client) {
