@@ -41,6 +41,7 @@ public class RunPeer {
 
     //TODO: Thread-safe boolean for termination
     static boolean sentTermination = false;
+    static boolean neighborsSent = false;
 
     // Constructor
     public RunPeer(int peerID) {

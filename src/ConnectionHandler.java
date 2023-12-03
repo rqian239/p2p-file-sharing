@@ -78,6 +78,7 @@ public class ConnectionHandler implements Runnable {
                         // HERE THIS PEER IS THE "SERVER"
                         RunPeer.allConnections.put(connectedPeerID, this);
                         returnHandshake();
+                        System.out.println(Logger.logChangePreferredNeighbors(thisPeerID, RunPeer.allConnections.keySet().stream().mapToInt(Integer::intValue).toArray()));
                     }
 
                 } else {
@@ -323,7 +324,7 @@ public class ConnectionHandler implements Runnable {
     private void sendBitfield(Socket socket, Peer peer) {
         try {
             // Convert the BitSet to a byte array
-            System.out.println("Sending bitfield to peer [" + connectedPeerID + "] ----- My Bitmap:" + peer.getBitmap().get(1));   //TODO: what is getBitmap().get(1)?
+            //System.out.println("Sending bitfield to peer [" + connectedPeerID + "] ----- My Bitmap:" + peer.getBitmap().get(1));   //TODO: what is getBitmap().get(1)?
             byte[] bitfieldBytes = peer.getBitmap().toByteArray();
 
             // Prepare the message
@@ -431,7 +432,7 @@ public class ConnectionHandler implements Runnable {
 
 
 
-                if(thisPeerID == RunPeer.lastPeerToConnect && thisPeer.getBitmap().cardinality() == RunPeer.numTotalPieces) {
+                if(thisPeerID == RunPeer.lastPeerToConnect && thisPeer.getBitmap().cardinality() == RunPeer.numTotalPieces && RunPeer.neighborsSent) {
                     // TODO: Send termination message to everyone
                     System.out.println(Logger.logFileDownloaded(thisPeerID));
                     boolean terminationStatus = RunPeer.sendTerminationToAll();
@@ -513,10 +514,12 @@ public class ConnectionHandler implements Runnable {
                 }
 
             }
+            RunPeer.neighborsSent = true;
         }
+
     }
 
-    public void selectOptNeighbor(){
+    public void selectOptNeighbor() throws IOException {
         ArrayList<Integer> allPeerIDs = new ArrayList<>(RunPeer.allConnections.keySet());
         // Shuffle the list to randomize the selection
         Collections.shuffle(allPeerIDs);
@@ -533,6 +536,15 @@ public class ConnectionHandler implements Runnable {
         if(RunPeer.optimisticPeerNeighbor!=tOPT) {
             System.out.println(Logger.logChangeOptUnchokeNeighbor(thisPeerID, RunPeer.optimisticPeerNeighbor));
         }
+        if(thisPeerID == RunPeer.lastPeerToConnect && thisPeer.getBitmap().cardinality() == RunPeer.numTotalPieces && RunPeer.neighborsSent) {
+            // TODO: Send termination message to everyone
+            System.out.println(Logger.logFileDownloaded(thisPeerID));
+            boolean terminationStatus = RunPeer.sendTerminationToAll();
+            if(terminationStatus) {
+                RunPeer.terminate();
+            }
+        }
+        RunPeer.neighborsSent = true;
     }
     public synchronized void startNeighborSelectionTimer() {
         timer.schedule(new TimerTask() {
@@ -552,7 +564,11 @@ public class ConnectionHandler implements Runnable {
         optimisticTimer.schedule(new TimerTask() {
             @Override
             public void run() {
+                try {
                     selectOptNeighbor();
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
 //                System.out.println("Optimistic Timer task executed");
             }
         }, RunPeer.unchokingInterval * 1000,RunPeer.optimisticUnchokingInterval * 1000); // convert seconds to milliseconds
