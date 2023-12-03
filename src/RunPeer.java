@@ -1,6 +1,8 @@
 import java.io.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Iterator;
+import java.util.NoSuchElementException;
 import java.util.Properties;
 import java.util.Scanner;
 import java.util.concurrent.ConcurrentHashMap;
@@ -19,6 +21,9 @@ public class RunPeer {
     // Threads
     Thread serverThread;
 
+    //TODO: Thread-safe set for requesting next piece
+    static ConcurrentHashMap<Integer, Byte> piecesWeDontHave; // the key is the piece index, the byte has no meaning (I wanted a thread-safe set but Java only has ConcurrentHashMap)
+
     // Constructor
     public RunPeer(int peerID) {
         // Create Hashmap to hold all peer objects
@@ -35,6 +40,14 @@ public class RunPeer {
         thisPeer = allPeers.get(peerID);
         if(thisPeer == null) {
             throw new RuntimeException("Invalid peerID: inputted peerID not found in PeerInfo.cfg!");
+        }
+
+        // Set up piecesWeDontHave HashMap
+        piecesWeDontHave = new ConcurrentHashMap<>();
+        if(!thisPeer.isHasFile()) {
+            for(int i = 0; i < calculateNumPieces(); i++) {
+                piecesWeDontHave.put(i, (byte)0);
+            }
         }
 
         // Print out log to show that peer has been set up
@@ -135,5 +148,25 @@ public class RunPeer {
 
         // Format the current time
         return currentTime.format(formatter);
+    }
+
+    public static synchronized int getRandomPieceIndex() {
+
+        Iterator<Integer> iterator = piecesWeDontHave.keySet().iterator();
+        // TODO: Make this actually random?
+        if(iterator.hasNext()){
+            try {
+                int index = iterator.next();
+                piecesWeDontHave.remove(index);
+                return index;
+            } catch (NoSuchElementException e) {
+                // We run out of pieces we don't have
+                return -1;
+            }
+        } else {
+            // RETURN -1 IF WE GOT ALL THE PIECES
+            return -1;
+        }
+
     }
 }

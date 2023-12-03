@@ -40,7 +40,6 @@ public class ConnectionHandler implements Runnable {
         // Expect to receive handshake
         try {
 
-            // TODO: Add a infinite while loop?
             while(true) {
                 if (!handshakeReceived) {
                     receiveHandshake();
@@ -60,7 +59,6 @@ public class ConnectionHandler implements Runnable {
 
                 } else {
 
-                    // TODO: Read other messages
                     System.out.println("Expecting a message...");
                     DataInputStream readMessage = readMessage();
                     // Read the message length (first four bytes)
@@ -98,12 +96,14 @@ public class ConnectionHandler implements Runnable {
                                 // TODO: send a request message
 
                                 // TODO: calculate the index we are requesting
-                                //int requestPieceIndex = 999;
-//                                for(int i = 0; i < thisPeer.getNumPieces(); i++) {
-//                                    if (interestedPieces.get(i) == true) {
-                                        sendRequestMessage(thisPeer.getBitmap().nextClearBit(0));
-//                                    }
-//                                }
+                                int requestThisPiece = RunPeer.getRandomPieceIndex();
+
+                                if(requestThisPiece == -1) {
+                                    // We do not have any pieces we're missing
+                                    System.out.println("WE ALREADY HAVE THE FILE?");
+                                } else {
+                                    sendRequestMessage(requestThisPiece);
+                                }
                             }
 
 
@@ -137,10 +137,13 @@ public class ConnectionHandler implements Runnable {
                             processPiece(receivedPayload, "tree" + thisPeerID + ".jpg");
 
                             sendHaveMessage(index);
+
+                            // Decide if we should continue
+                            int requestThisPiece = RunPeer.getRandomPieceIndex();
+                            if(requestThisPiece != -1){
+                                sendRequestMessage(requestThisPiece);
+                            }
                             break;
-                    }
-                    if(thisPeer.getBitmap().cardinality() != thisPeer.getNumPieces() && messageType == Constants.PIECE){
-                        sendRequestMessage(thisPeer.getBitmap().nextClearBit(0));
                     }
                     //TODO:else stop thread
 
@@ -176,7 +179,6 @@ public class ConnectionHandler implements Runnable {
         byte[] payload = ByteBuffer.allocate(4).putInt(pieceIndex).array();
         Message message = new Message(messageType, payload);
         byte[] messageBytes = message.createMessageBytes();
-        System.out.println(Logger.logPieceRequestedFrom(thisPeerID, connectedPeerID, pieceIndex));
 
         client.sendMessage(socket, messageBytes);
     }
