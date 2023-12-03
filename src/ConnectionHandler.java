@@ -12,6 +12,7 @@ public class ConnectionHandler implements Runnable {
     int thisPeerID;
     Peer thisPeer;
     int pieceSize;
+    int index;
 
     Client client = null;
 
@@ -79,7 +80,7 @@ public class ConnectionHandler implements Runnable {
                             // Parse the bitfield
                             otherPeerBitfield = BitSet.valueOf(receivedPayload);
 
-                            System.out.println("Received a bitfield from peer [" + connectedPeerID + "] ----- Other Bitmap:" + otherPeerBitfield.get(1)); //TODO: what is getBitmap().get(1)?
+                            //System.out.println("Received a bitfield from peer [" + connectedPeerID + "] ----- Other Bitmap:" + otherPeerBitfield.get(1)); //TODO: what is getBitmap().get(1)?
 
                             // Return a bitfield if we haven't one yet
                             if (!sentBitfield) {
@@ -98,11 +99,11 @@ public class ConnectionHandler implements Runnable {
 
                                 // TODO: calculate the index we are requesting
                                 //int requestPieceIndex = 999;
-                                for(int i = 0; i < thisPeer.getNumPieces(); i++) {
-                                    if (interestedPieces.get(i) == true) {
-                                        sendRequestMessage(i);
-                                    }
-                                }
+//                                for(int i = 0; i < thisPeer.getNumPieces(); i++) {
+//                                    if (interestedPieces.get(i) == true) {
+                                        sendRequestMessage(thisPeer.getBitmap().nextClearBit(0));
+//                                    }
+//                                }
                             }
 
 
@@ -116,27 +117,32 @@ public class ConnectionHandler implements Runnable {
                             System.out.println(Logger.logReceiveNotInterested(thisPeerID, connectedPeerID));
                             break;
                         case Constants.HAVE:
-                            //
+                            index = getIndexByte(receivedPayload);
+
+                            otherPeerBitfield.set(index, true);
+
                             break;
                         case Constants.REQUEST:
                             // We send the piece back
                             //TODO: send the file to interested peer
-                            byte[] intBuffer = new byte[4];
-                            System.arraycopy(receivedPayload, 0, intBuffer, 0, 4);
-                            ByteBuffer wrapped = ByteBuffer.wrap(intBuffer); // big-endian by default
-                            int index = wrapped.getInt();
+                            index = getIndexByte(receivedPayload);
 
                             sendPiece(socket, index, "tree.jpg", pieceSize);
 
                             break;
 
                         case Constants.PIECE:
-
+                            index = getIndexByte(receivedPayload);
                             // TODO: receive the piece here
                             processPiece(receivedPayload, "tree" + thisPeerID + ".jpg");
 
+                            sendHaveMessage(index);
                             break;
                     }
+                    if(thisPeer.getBitmap().cardinality() != thisPeer.getNumPieces() && messageType == Constants.PIECE){
+                        sendRequestMessage(thisPeer.getBitmap().nextClearBit(0));
+                    }
+                    //TODO:else stop thread
 
                 }
             }
@@ -161,6 +167,25 @@ public class ConnectionHandler implements Runnable {
         System.out.println(Logger.logPieceRequestedFrom(thisPeerID, connectedPeerID, requestedPieceIndex));
 
         client.sendMessage(socket, messageBytes);
+    }
+    private void sendHaveMessage(int pieceIndex) throws IOException {
+        // Create message
+
+        byte messageType = Constants.HAVE;
+
+        byte[] payload = ByteBuffer.allocate(4).putInt(pieceIndex).array();
+        Message message = new Message(messageType, payload);
+        byte[] messageBytes = message.createMessageBytes();
+        System.out.println(Logger.logPieceRequestedFrom(thisPeerID, connectedPeerID, pieceIndex));
+
+        client.sendMessage(socket, messageBytes);
+    }
+    private int getIndexByte(byte[] receivedPayload){
+        byte[] intBuffer = new byte[4];
+        System.arraycopy(receivedPayload, 0, intBuffer, 0, 4);
+        ByteBuffer wrapped = ByteBuffer.wrap(intBuffer); // big-endian by default
+        int index = wrapped.getInt();
+        return index;
     }
 
     private DataInputStream readMessage() throws IOException {
@@ -316,10 +341,7 @@ public class ConnectionHandler implements Runnable {
     
     public int processPiece(byte[] payload, String fName){
         try{
-            byte[] intBuffer = new byte[4];
-            System.arraycopy(payload, 0, intBuffer, 0, 4);
-            ByteBuffer wrapped = ByteBuffer.wrap(intBuffer); // big-endian by default
-            int index = wrapped.getInt();
+            index = getIndexByte(payload);
 
             // File newfile = new File(fName);
             FileOutputStream fos = new FileOutputStream(fName, true);
@@ -341,11 +363,11 @@ public class ConnectionHandler implements Runnable {
             fos.write(fileBytes, 0, bytesRead);
 
             // Update this bitmap
-            RunPeer.allPeers.get(thisPeerID).getBitmap().set(index);
-            System.out.println(Logger.logPieceDownloadedFrom(thisPeerID, connectedPeerID, index, RunPeer.allPeers.get(thisPeerID).getBitmap().cardinality()));
+            thisPeer.getBitmap().set(index);
+            System.out.println(Logger.logPieceDownloadedFrom(thisPeerID, connectedPeerID, index, thisPeer.getBitmap().cardinality()));
             fos.flush();
             fos.close();
-            if(RunPeer.allPeers.get(thisPeerID).getNumPieces() == (index+1)){
+            if(thisPeer.getNumPieces() == (index+1)){
                 System.out.println(Logger.logFileDownloaded(thisPeerID));
             }
         }
