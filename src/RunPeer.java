@@ -15,6 +15,8 @@ public class RunPeer {
     static int fileSize;
     static int pieceSize;
     final Peer thisPeer;
+    static int hasFilePeerID;
+    static int lastPeerToConnect = 0;
     Server server;
     static ConcurrentHashMap<Integer, Peer> allPeers;
     static ConcurrentHashMap<Integer, ConnectionHandler> allConnections;
@@ -133,6 +135,14 @@ public class RunPeer {
                 allBitmaps.put(peer.getPeerID(), peer.getBitmap());
 //                Peer current = allPeers.get(peerID);
 //                System.out.println("PARSED PEER INFO : " + current.getPeerID() + " " + current.getHostname() + " " + current.getPort() + " " + current.isHasFile());
+
+                if(hasFile) {
+                    hasFilePeerID = peer.getPeerID();
+                }
+
+                if(peer.getPeerID() > lastPeerToConnect) {
+                    lastPeerToConnect = peer.getPeerID();
+                }
 
                 makePeersDirectory(peer.getPeerID());
 

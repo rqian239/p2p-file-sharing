@@ -126,14 +126,14 @@ public class ConnectionHandler implements Runnable {
                             //TODO: send the file to interested peer
                             index = getIndexByte(receivedPayload);
 
-                            sendPiece(socket, index, "tree.jpg", pieceSize);
+                            sendPiece(socket, index, RunPeer.hasFilePeerID + "/" + RunPeer.dataFilename, pieceSize);
 
                             break;
 
                         case Constants.PIECE:
                             index = getIndexByte(receivedPayload);
                             // TODO: receive the piece here
-                            processPiece(receivedPayload, "tree" + thisPeerID + ".jpg");
+                            processPiece(receivedPayload, thisPeerID + "/" + RunPeer.dataFilename);
 
                             sendHaveMessage(index);
 
