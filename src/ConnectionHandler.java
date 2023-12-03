@@ -196,7 +196,7 @@ public class ConnectionHandler implements Runnable {
         byte[] payload = ByteBuffer.allocate(4).putInt(requestedPieceIndex).array();
         Message message = new Message(messageType, payload);
         byte[] messageBytes = message.createMessageBytes();
-        System.out.println(Logger.logPieceRequestedFrom(thisPeerID, connectedPeerID, requestedPieceIndex));
+        //System.out.println(Logger.logPieceRequestedFrom(thisPeerID, connectedPeerID, requestedPieceIndex));
 
         client.sendMessage(socket, messageBytes);
     }
