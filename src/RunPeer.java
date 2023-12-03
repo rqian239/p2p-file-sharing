@@ -1,4 +1,7 @@
+import messages.Message;
+
 import java.io.*;
+import java.net.Socket;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -16,6 +19,7 @@ public class RunPeer {
     static int pieceSize;
     final Peer thisPeer;
     static int hasFilePeerID;
+    static int numTotalPieces;
     static int lastPeerToConnect = 0;
     Server server;
     static ConcurrentHashMap<Integer, Peer> allPeers;
@@ -31,6 +35,9 @@ public class RunPeer {
 
     //TODO: Thread-safe set for requesting next piece
     static ConcurrentHashMap<Integer, Byte> piecesWeDontHave; // the key is the piece index, the byte has no meaning (I wanted a thread-safe set but Java only has ConcurrentHashMap)
+
+    //TODO: Thread-safe boolean for termination
+    static boolean sentTermination = false;
 
     // Constructor
     public RunPeer(int peerID) {
@@ -124,7 +131,8 @@ public class RunPeer {
         System.out.println("FileName: " + dataFilename);
         System.out.println("FileSize: " + fileSize);
         System.out.println("PieceSize: " + pieceSize);
-        System.out.println("CALCULATED NUMBER OF PIECES: " + calculateNumPieces());
+        numTotalPieces = calculateNumPieces();
+        System.out.println("CALCULATED NUMBER OF PIECES: " + numTotalPieces);
         System.out.println("----------------------------------------------------------------");
     }
 
@@ -254,6 +262,32 @@ public class RunPeer {
         }
 
         return -1;
+    }
+
+    public static synchronized boolean sendTerminationToAll() throws IOException {
+
+        if(!sentTermination) {
+
+            Message terminationMessage = new Message(Constants.TERMINATE);
+
+            for(Integer peerID : allConnections.keySet()) {
+
+                Socket sendToThisSocket = allConnections.get(peerID).socket;
+                byte[] terminationMessageBytes = terminationMessage.createMessageBytes();
+                OutputStream outputStream = sendToThisSocket.getOutputStream();
+                outputStream.write(terminationMessageBytes);
+
+            }
+
+        }
+
+        return true;
+
+    }
+
+    public static void terminate() {
+        System.out.println(Logger.allPeersHaveTheFile());
+        System.exit(0);
     }
 
 }

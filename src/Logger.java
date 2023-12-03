@@ -116,6 +116,12 @@ public class Logger {
         return logMessage;
     }
 
+    public static String allPeersHaveTheFile(){
+        String logMessage = "[" + getCurrentTime() + "]: All peers have the complete file. Terminating the program.";
+        logWriter.println(logMessage);
+        logWriter.flush();
+        return logMessage;
+    }
     public static String getCurrentTime() {
         // Get the current time
         LocalDateTime currentTime = LocalDateTime.now();

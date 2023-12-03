@@ -173,6 +173,11 @@ public class ConnectionHandler implements Runnable {
                                 sendRequestMessage(requestThisPiece);
                             }
                             break;
+                        case Constants.TERMINATE:
+
+                            RunPeer.terminate();
+                            break;
+
                     }
                     //TODO:else stop thread
 
@@ -438,6 +443,16 @@ public class ConnectionHandler implements Runnable {
             // If all pieces are downloaded, log the completion
             if (RunPeer.piecesWeDontHave.isEmpty()) {
                 System.out.println(Logger.logFileDownloaded(thisPeerID));
+
+
+                if(thisPeerID == RunPeer.lastPeerToConnect && thisPeer.getBitmap().cardinality() == RunPeer.numTotalPieces) {
+                    // TODO: Send termination message to everyone
+                    boolean terminationStatus = RunPeer.sendTerminationToAll();
+                    if(terminationStatus) {
+                        RunPeer.terminate();
+                    }
+                }
+
             }
 
             raf.close();
