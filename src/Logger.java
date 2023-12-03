@@ -15,7 +15,7 @@ public class Logger {
         // this.currpeerID = peerID;
         //eventually write to file
 
-        String logFileName = "log_peer_" + peerID + ".log";
+        String logFileName = peerID + "/log_peer_" + peerID + ".log";
         try {
             logWriter = new PrintWriter(new FileWriter(logFileName, true));
         }
