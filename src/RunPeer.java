@@ -1,4 +1,7 @@
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -130,11 +133,31 @@ public class RunPeer {
                 allBitmaps.put(peer.getPeerID(), peer.getBitmap());
 //                Peer current = allPeers.get(peerID);
 //                System.out.println("PARSED PEER INFO : " + current.getPeerID() + " " + current.getHostname() + " " + current.getPort() + " " + current.isHasFile());
+
+                makePeersDirectory(peer.getPeerID());
+
             }
             scnr.close();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
+    }
+
+    private void makePeersDirectory(int peerID) {
+
+        Path directoryPath = Paths.get(peerID + "/");
+
+        if (!Files.exists(directoryPath)) {
+            try {
+                Files.createDirectories(directoryPath);
+//                System.out.println("Directory created successfully.");
+            } catch (IOException e) {
+                System.out.println("Failed to create directory: " + e.getMessage());
+            }
+        } else {
+//            System.out.println("Directory already exists.");
+        }
+
     }
 
     public int calculateNumPieces() {
