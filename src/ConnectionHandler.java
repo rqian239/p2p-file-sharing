@@ -405,7 +405,7 @@ public class ConnectionHandler implements Runnable {
             System.out.println(Logger.logPieceDownloadedFrom(thisPeerID, connectedPeerID, index, thisPeer.getBitmap().cardinality()));
 
             // If all pieces are downloaded, log the completion
-            if (thisPeer.getNumPieces() == (index + 1)) {
+            if (RunPeer.piecesWeDontHave.isEmpty()) {
                 System.out.println(Logger.logFileDownloaded(thisPeerID));
             }
 
