@@ -339,39 +339,76 @@ public class ConnectionHandler implements Runnable {
         return 0;
     }
     
-    public int processPiece(byte[] payload, String fName){
-        try{
-            index = getIndexByte(payload);
+//    public int processPiece(byte[] payload, String fName){
+//        try{
+//            index = getIndexByte(payload);
+//
+//            // File newfile = new File(fName);
+//            FileOutputStream fos = new FileOutputStream(fName, true);
+//
+//            // byte[] indexBytes = new byte[4];
+//            // in.read(indexBytes);
+//            // int indexT = ByteBuffer.wrap(indexBytes).getInt();
+//
+//            //System.out.println("Piece Index Received: " + indexT);
+//
+//            byte[] fileBytes = new byte[pieceSize];
+//            //System.out.println("In bytes " + in.available()+" ---- Message Length:"+messageLength +"  ----  Message Type: "+ messageType);
+//            int bytesRead = payload.length - 4;
+//
+//            System.arraycopy(payload, 4, fileBytes, 0, bytesRead);
+//
+//
+//            //System.out.println("Received bytes: " + bytesRead);
+//            fos.write(fileBytes, 0, bytesRead);
+//
+//            // Update this bitmap
+//            thisPeer.getBitmap().set(index);
+//            System.out.println(Logger.logPieceDownloadedFrom(thisPeerID, connectedPeerID, index, thisPeer.getBitmap().cardinality()));
+//            fos.flush();
+//            fos.close();
+//            if(thisPeer.getNumPieces() == (index+1)){
+//                System.out.println(Logger.logFileDownloaded(thisPeerID));
+//            }
+//        }
+//        catch(IOException e){
+//            e.printStackTrace();
+//        }
+//        return 0;
+//    }
+    public int processPiece(byte[] payload, String fName) {
+        try {
+            int index = getIndexByte(payload);
+
+            // Calculate the starting position in the file
+            long startPosition = (long) index * pieceSize;
 
             // File newfile = new File(fName);
-            FileOutputStream fos = new FileOutputStream(fName, true);
-            
-            // byte[] indexBytes = new byte[4];
-            // in.read(indexBytes);
-            // int indexT = ByteBuffer.wrap(indexBytes).getInt();
+            RandomAccessFile raf = new RandomAccessFile(fName, "rw");
 
-            //System.out.println("Piece Index Received: " + indexT);
+            // Seek to the specified position in the file
+            raf.seek(startPosition);
 
             byte[] fileBytes = new byte[pieceSize];
-            //System.out.println("In bytes " + in.available()+" ---- Message Length:"+messageLength +"  ----  Message Type: "+ messageType);
             int bytesRead = payload.length - 4;
 
+            // Copy the payload bytes to the fileBytes array
             System.arraycopy(payload, 4, fileBytes, 0, bytesRead);
 
-
-            //System.out.println("Received bytes: " + bytesRead);
-            fos.write(fileBytes, 0, bytesRead);
+            // Write the fileBytes array to the file
+            raf.write(fileBytes, 0, bytesRead);
 
             // Update this bitmap
             thisPeer.getBitmap().set(index);
             System.out.println(Logger.logPieceDownloadedFrom(thisPeerID, connectedPeerID, index, thisPeer.getBitmap().cardinality()));
-            fos.flush();
-            fos.close();
-            if(thisPeer.getNumPieces() == (index+1)){
+
+            // If all pieces are downloaded, log the completion
+            if (thisPeer.getNumPieces() == (index + 1)) {
                 System.out.println(Logger.logFileDownloaded(thisPeerID));
             }
-        }
-        catch(IOException e){
+
+            raf.close();
+        } catch (IOException e) {
             e.printStackTrace();
         }
         return 0;
