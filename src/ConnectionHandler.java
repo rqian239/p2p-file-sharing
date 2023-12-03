@@ -20,8 +20,6 @@ public class ConnectionHandler implements Runnable {
 
     boolean sentBitfield = false;
 
-    BitSet otherPeerBitfield = null;
-
     BitSet interestedPieces = null;
     
 
@@ -76,7 +74,8 @@ public class ConnectionHandler implements Runnable {
                         case Constants.BITFIELD:
 
                             // Parse the bitfield
-                            otherPeerBitfield = BitSet.valueOf(receivedPayload);
+                            BitSet receivedBitmap = BitSet.valueOf(receivedPayload);
+                            RunPeer.replaceBitMap(connectedPeerID, receivedBitmap);
 
                             //System.out.println("Received a bitfield from peer [" + connectedPeerID + "] ----- Other Bitmap:" + otherPeerBitfield.get(1)); //TODO: what is getBitmap().get(1)?
 
@@ -119,7 +118,7 @@ public class ConnectionHandler implements Runnable {
                         case Constants.HAVE:
                             index = getIndexByte(receivedPayload);
 
-                            otherPeerBitfield.set(index, true);
+                            RunPeer.setBitsInBitMap(connectedPeerID, index, true);
 
                             break;
                         case Constants.REQUEST:
@@ -295,8 +294,9 @@ public class ConnectionHandler implements Runnable {
     private boolean checkIfWeAreInterested() {
         boolean interested = false;
         interestedPieces.set(0, thisPeer.getNumPieces(), false);
-        for (int i = 0; i < otherPeerBitfield.length(); i++) {
-            if (otherPeerBitfield.get(i) && !thisPeer.getBitmap().get(i)) {
+        BitSet otherBitmap = RunPeer.getBitmap(connectedPeerID);
+        for (int i = 0; i < otherBitmap.length(); i++) {
+            if (otherBitmap.get(i) && !thisPeer.getBitmap().get(i)) {
                 interestedPieces.set(i,true);
                 interested = true;
             }

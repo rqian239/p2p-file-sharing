@@ -1,10 +1,7 @@
 import java.io.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Iterator;
-import java.util.NoSuchElementException;
-import java.util.Properties;
-import java.util.Scanner;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class RunPeer {
@@ -18,6 +15,7 @@ public class RunPeer {
     Server server;
     static ConcurrentHashMap<Integer, Peer> allPeers;
     static ConcurrentHashMap<Integer, ConnectionHandler> allConnections;
+    static ConcurrentHashMap<Integer, BitSet> allBitmaps;
     // Threads
     Thread serverThread;
 
@@ -31,6 +29,9 @@ public class RunPeer {
 
         // Create Hashmap to hold all clients
         allConnections = new ConcurrentHashMap<>();
+
+        // Create Hashmap to hold all bitmaps
+        allBitmaps = new ConcurrentHashMap<>();
 
         // Parse configs
         parseCommonConfig();
@@ -126,7 +127,8 @@ public class RunPeer {
                 boolean hasFile = Integer.parseInt(variables[3]) == 1;
                 Peer peer = new Peer(peerID, hostname, port, hasFile, calculateNumPieces());
                 allPeers.put(peer.getPeerID(), peer);
-                Peer current = allPeers.get(peerID);
+                allBitmaps.put(peer.getPeerID(), peer.getBitmap());
+//                Peer current = allPeers.get(peerID);
 //                System.out.println("PARSED PEER INFO : " + current.getPeerID() + " " + current.getHostname() + " " + current.getPort() + " " + current.isHasFile());
             }
             scnr.close();
@@ -169,4 +171,17 @@ public class RunPeer {
         }
 
     }
+
+    public static synchronized void replaceBitMap(int peerID, BitSet bitmap) {
+        allBitmaps.put(peerID, bitmap);
+    }
+
+    public static synchronized void setBitsInBitMap(int peerID, int pieceIndex, boolean setValue) {
+        allBitmaps.get(peerID).set(pieceIndex, setValue);
+    }
+
+    public static synchronized BitSet getBitmap(int peerID) {
+        return allBitmaps.get(peerID);
+    }
+
 }
