@@ -1,13 +1,6 @@
-import messages.Handshake;
-
 import java.io.*;
-import java.net.Socket;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.AbstractMap;
-import java.util.BitSet;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Properties;
 import java.util.Scanner;
 import java.util.concurrent.ConcurrentHashMap;
@@ -104,9 +97,6 @@ public class RunPeer {
         System.out.println("PieceSize: " + pieceSize);
         System.out.println("CALCULATED NUMBER OF PIECES: " + calculateNumPieces());
         System.out.println("----------------------------------------------------------------");
-
-
-
     }
 
     public void parsePeerInfo(){
@@ -146,125 +136,4 @@ public class RunPeer {
         // Format the current time
         return currentTime.format(formatter);
     }
-
-    // private static void sendBitfield(Socket socket, Peer peer) {
-    //     try {
-    //         // Convert the BitSet to a byte array
-    //         byte[] bitfieldBytes = peer.getBitmap().toByteArray();
-
-    //         // Prepare the message
-    //         messages.Message bitfieldMessage = new messages.Message((byte) 5, bitfieldBytes);
-    //         byte[] messageBytes = bitfieldMessage.createMessageBytes();
-
-    //         // Send the message
-    //         OutputStream outputStream = socket.getOutputStream();
-    //         outputStream.write(messageBytes);
-    //     } 
-    //     catch (IOException e) {
-    //         e.printStackTrace();
-    //     }
-    // }
-
-    private static void checkInterested(Peer peer, Map<Integer, AbstractMap.SimpleEntry<Peer, Socket>> peerMap){
-        for(int i = 0; i < peer.getNumPieces(); i++){
-            for(Map.Entry<Integer, AbstractMap.SimpleEntry<Peer, Socket>> entry : peerMap.entrySet()){
-                if(!peer.hasPiece(i) && entry.getValue().getKey().hasPiece(i)){
-                    System.out.println("Peer " + peer.getPeerID() + " is interested in " + entry.getValue().getKey().getPeerID());
-                    //send interested message
-                    try {
-                        messages.Message interested = new messages.Message((byte) 2);
-                        OutputStream outputStream;
-                        outputStream = entry.getValue().getValue().getOutputStream();
-                        outputStream.write(interested.createMessageBytes());
-                    } catch (IOException e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
-                    }
-                }
-                else{
-                    System.out.println("Peer " + peer.getPeerID() + " is not interested in " + entry.getValue().getKey().getPeerID());
-                }
-            }
-
-        }
-    }
-
-    private static void checkReceivedBitfield(Socket socket, BitSet peerBitSet) {
-        try {
-            DataInputStream in = new DataInputStream(socket.getInputStream());
-            // reads message length- 4 bytes
-            int messageLength = in.readInt();
-            // reads message type - 1 byte
-            byte messageType = in.readByte();
-            
-            if (messageType == (byte) 5) {
-                // Read the bitfield bytes
-                byte[] receivedBitfield = new byte[messageLength - 1]; // 1 byte for message type
-                in.readFully(receivedBitfield);
-    
-                BitSet receivedBitSet = BitSet.valueOf(receivedBitfield);
-    
-                boolean interested = false;
-                for (int i = 0; i < receivedBitSet.length(); i++) {
-                    if (receivedBitSet.get(i) && !peerBitSet.get(i)) {
-                        interested = true;
-                        break;
-                    }
-                }
-    
-                // Prepare and send the appropriate message
-                OutputStream outputStream = socket.getOutputStream();
-                if (interested) {
-                    //send interested message
-                    byte messageBytes = (byte)2; 
-                    //  Write the message to the output stream
-                    outputStream.write(messageBytes);
-                    outputStream.flush();
-                    outputStream.close();
-                } 
-                else {
-                    //not interested
-                    byte messageBytes = (byte)3; 
-                    //  Write the message to the output stream
-                    outputStream.write(messageBytes);
-                    outputStream.flush();
-                    outputStream.close();
-                }
-            }
-        }
-        catch (IOException e) {
-            e.printStackTrace();
-        }
-
-    }
-
-    public void readMessage(){
-
-    }
-
-
-    // public int sendPiece(String fName, int index, Socket socket){
-    //     try{
-    //         BufferedOutputStream bos = new BufferedOutputStream(socket.getOutputStream());
-    //         FileInputStream fis = new FileInputStream(fName);
-    //         byte[] fileBytes = new byte[pieceSize];
-    //         BufferedInputStream bis = new BufferedInputStream(fis);
-    //         int n=-1;
-    //         bis.read(fileBytes,index*pieceSize,pieceSize);
-    //         while((n = )>-1){
-    //             bos.write(fileBytes, index, n);
-    //             bos.flush();
-    //         }
-
-    //     }
-    //     catch(IOException e){
-    //         e.printStackTrace();
-    //     }
-    //     return 0;
-    // }
-    
-    //FileOutputStream(File file, boolean true)
-
-
-
 }

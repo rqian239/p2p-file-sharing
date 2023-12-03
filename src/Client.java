@@ -21,7 +21,6 @@ public class Client {
     public void connect(Peer connectToThisPeer) throws IOException {
         this.socket = new Socket(connectToThisPeer.getHostname(), connectToThisPeer.getPort());
         sendHandshake(socket, thisPeerID);
-//        sendBitfield(socket, connectToThisPeer);
         System.out.println("[" + RunPeer.getCurrentTime() + "]: Peer [" + thisPeerID + "] makes a connection to Peer [" + connectToThisPeer.getPeerID() + "]. ");
 
     }
