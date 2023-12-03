@@ -536,6 +536,7 @@ public class ConnectionHandler implements Runnable {
         if(RunPeer.optimisticPeerNeighbor!=tOPT) {
             System.out.println(Logger.logChangeOptUnchokeNeighbor(thisPeerID, RunPeer.optimisticPeerNeighbor));
         }
+        RunPeer.neighborsSent = true;
         if(thisPeerID == RunPeer.lastPeerToConnect && thisPeer.getBitmap().cardinality() == RunPeer.numTotalPieces && RunPeer.neighborsSent) {
             // TODO: Send termination message to everyone
             System.out.println(Logger.logFileDownloaded(thisPeerID));
@@ -544,7 +545,7 @@ public class ConnectionHandler implements Runnable {
                 RunPeer.terminate();
             }
         }
-        RunPeer.neighborsSent = true;
+
     }
     public synchronized void startNeighborSelectionTimer() {
         timer.schedule(new TimerTask() {
