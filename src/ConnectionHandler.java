@@ -33,7 +33,7 @@ public class ConnectionHandler implements Runnable {
 
     BitSet interestedPieces = null;
     Logger Logger;
-    
+
 
     public ConnectionHandler(Socket socket, int thisPeerID) {
         this.socket = socket;
@@ -155,15 +155,16 @@ public class ConnectionHandler implements Runnable {
                             //TODO: send the file to interested peer
                             index = getIndexByte(receivedPayload);
 
-                            sendPiece(socket, index, "tree.jpg", pieceSize);
+                            sendPiece(socket, index, RunPeer.hasFilePeerID + "/" + RunPeer.dataFilename, pieceSize);
 
                             break;
 
                         case Constants.PIECE:
                             index = getIndexByte(receivedPayload);
                             // TODO: receive the piece here
-                            processPiece(receivedPayload, "tree" + thisPeerID + ".jpg");
+                            processPiece(receivedPayload, thisPeerID + "/" + RunPeer.dataFilename);
                             incrementReceivedPieces(connectedPeerID);
+
                             sendHaveMessage(index);
 
                             // Decide if we should continue
@@ -195,7 +196,7 @@ public class ConnectionHandler implements Runnable {
         byte[] payload = ByteBuffer.allocate(4).putInt(requestedPieceIndex).array();
         Message message = new Message(messageType, payload);
         byte[] messageBytes = message.createMessageBytes();
-        //System.out.println(Logger.logPieceRequestedFrom(thisPeerID, connectedPeerID, requestedPieceIndex));
+        System.out.println(Logger.logPieceRequestedFrom(thisPeerID, connectedPeerID, requestedPieceIndex));
 
         client.sendMessage(socket, messageBytes);
     }
