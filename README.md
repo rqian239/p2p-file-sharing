@@ -1,6 +1,9 @@
 # p2p-file-sharing
-Peer-to-peer file sharing program
+Video Demo: [https://www.youtube.com/watch?v=LDYJR8RUQVQ](https://www.youtube.com/watch?v=LDYJR8RUQVQ)
+Peer-to-peer file sharing program, emulating BitTorrent
 
-To run use "javac *.java" command to create class files.
+To compile, use "javac *.java" command in src/ to create class files.
 
-Then use "java peer1 *socketnumber*" and "java peer2 *hostname* *socketnumber*" in 2 terminal instances to connect the two peers.
+Please refer to the PeerInfo.cfg file for possible peers to run and peer-specific configs. Refer to Common.cfg for project configs (similar to metainfo file from BitTorrent).
+
+To run a peer in a specific instance, use "java peerProcess _peerID_" in src/
